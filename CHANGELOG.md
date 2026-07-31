@@ -67,3 +67,9 @@
 - Pin the map to the exact building once the address is confirmed.
 - Swap in the 3 excluded photos if cleaner versions become available.
 - Testimonials / reviews section, if wanted (seen on the reference site).
+
+## Phase 4 — Exact location (2026-07-31)
+
+- Location section and map now use the confirmed address: Sharnam
+  Sunshine, Fatehgunj, Vadodara, Gujarat 390008.
+- Added a direct "Open in Google Maps" link alongside the embedded map.

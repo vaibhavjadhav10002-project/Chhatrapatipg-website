@@ -5,14 +5,9 @@ Standalone marketing website for Chhatrapati PG, Fatehganj. Plain HTML/CSS/JS
 
 ## Still to do
 
-1. **Exact map pin** — the Location section embeds a real Google Map (no
-   API key needed), currently centered on "Fatehganj, Vadodara". To pin it
-   to your exact building, open Google Maps, search your address, tap
-   **Share → Embed a map**, and swap in the `src` it gives you for the
-   `<iframe>` in the Location section of `index.html`.
-2. **More photos** — the gallery uses 7 of your uploaded photos (see
-   below). Send more any time and they can be dropped straight into
-   `images/`.
+- **More photos** — the gallery uses 7 of your uploaded photos (see
+  below). Send more any time and they can be dropped straight into
+  `images/`.
 
 ## Rooms & rates (as of this build)
 
