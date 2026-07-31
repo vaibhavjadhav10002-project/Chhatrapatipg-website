@@ -67,6 +67,17 @@ h1, h2, h3 {
 
 button { font-family: inherit; }
 
+/* ---- top utility bar ---- */
+.topbar {
+  background: var(--ink); color: var(--paper);
+}
+.topbar__inner {
+  max-width: var(--container); margin: 0 auto; padding: 0.5rem 1.5rem;
+  display: flex; gap: 1.6rem; font-size: 0.78rem; font-family: var(--font-mono);
+}
+.topbar__inner a { opacity: 0.85; transition: opacity .15s ease; }
+.topbar__inner a:hover { opacity: 1; color: var(--marigold); }
+
 /* ---- layout helpers ---- */
 main > section {
   max-width: var(--container);
@@ -155,14 +166,27 @@ main > section {
 .hero__meta .num { display: block; font-family: var(--font-mono); font-weight: 600; font-size: 1.15rem; color: var(--ink); }
 .hero__meta .label { display: block; font-size: 0.82rem; color: #6b6659; }
 
-.hero__art { position: relative; justify-self: center; }
-.building-svg { width: min(280px, 70vw); animation: float 6s ease-in-out infinite; }
-.windows rect { transition: fill .3s ease; }
-
-@keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-8px); }
+.hero__art { position: relative; justify-self: center; width: 100%; max-width: 380px; }
+.hero__photo {
+  border-radius: 20px; overflow: hidden;
+  box-shadow: 0 24px 50px rgba(31,42,68,0.16);
+  border: 6px solid var(--card);
+  transform: rotate(1.2deg);
 }
+.hero__photo img { aspect-ratio: 4/5; object-fit: cover; }
+
+.hero__badge {
+  position: absolute; top: -14px; right: -10px;
+  background: var(--marigold); color: var(--ink);
+  border-radius: 14px; padding: 0.6rem 1rem;
+  box-shadow: 0 10px 24px rgba(232,162,51,0.35);
+  transform: rotate(-3deg);
+  font-family: var(--font-mono);
+  display: flex; flex-direction: column; line-height: 1.2;
+}
+.hero__badge-from { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.06em; opacity: 0.75; }
+.hero__badge-price { font-size: 1.15rem; font-weight: 600; }
+.hero__badge-price small { font-weight: 400; font-size: 0.7rem; }
 
 .hero__pin {
   position: absolute; bottom: -8px; left: 50%; transform: translateX(-50%);
@@ -177,6 +201,36 @@ main > section {
 
 @media (min-width: 880px) {
   .hero { grid-template-columns: 1.1fr 0.9fr; align-items: center; }
+}
+
+/* ==========================================================================
+   Rooms (photo cards)
+   ========================================================================== */
+.rooms-grid {
+  display: grid; grid-template-columns: 1fr; gap: 1.4rem;
+  margin-bottom: 2.6rem;
+}
+.room-card {
+  background: var(--card); border: 1px solid var(--line);
+  border-radius: var(--radius); overflow: hidden;
+  transition: transform .2s ease, box-shadow .2s ease;
+}
+.room-card:hover { transform: translateY(-4px); box-shadow: 0 20px 40px rgba(31,42,68,0.1); }
+.room-card__photo { position: relative; aspect-ratio: 4/3; }
+.room-card__photo img { width: 100%; height: 100%; object-fit: cover; }
+.room-card__price {
+  position: absolute; bottom: 0.9rem; left: 0.9rem;
+  background: var(--ink); color: var(--paper);
+  font-family: var(--font-mono); font-weight: 600; font-size: 0.95rem;
+  padding: 0.4rem 0.8rem; border-radius: 999px;
+}
+.room-card__price small { font-weight: 400; color: #b9c0cf; font-size: 0.7rem; }
+.room-card__body { padding: 1.3rem 1.4rem 1.5rem; }
+.room-card__body h3 { font-size: 1.15rem; font-weight: 600; margin-bottom: 0.4rem; }
+.room-card__body p { margin: 0; font-size: 0.9rem; color: #6b6659; }
+
+@media (min-width: 700px) {
+  .rooms-grid { grid-template-columns: repeat(2, 1fr); }
 }
 
 /* ==========================================================================
@@ -206,6 +260,7 @@ main > section {
   font-size: 0.95rem;
 }
 .board__row:last-of-type { border-bottom: none; }
+.rate--2col { grid-column: 3; }
 .board__row--head {
   font-family: var(--font-mono); font-size: 0.72rem;
   letter-spacing: 0.08em; text-transform: uppercase;
@@ -228,6 +283,12 @@ main > section {
 .board__note {
   margin: 1.4rem 0 0; font-size: 0.85rem; color: #6b6659;
   border-top: 1px solid var(--line); padding-top: 1rem;
+}
+.board__note--lead {
+  margin: 0 0 0.4rem; border-top: none; padding-top: 0;
+  font-family: var(--font-mono); font-size: 0.8rem;
+  text-transform: uppercase; letter-spacing: 0.05em;
+  color: var(--marigold-dark); font-weight: 600;
 }
 
 /* ==========================================================================

@@ -40,3 +40,30 @@
 ### Next phase ideas (not built yet)
 - Pin the map to the exact building address once available.
 - Add real photos into `images/` (structure is ready, just drop files in).
+
+## Phase 3 — Real photos + premium redesign (2026-07-31)
+
+- **Rates corrected**: Triple sharing ₹5,000/mo, Double sharing ₹6,000/mo,
+  food now shown as an optional +₹3,000/mo add-on instead of bundled into
+  the rent (previous male/female price split removed since it no longer
+  applied).
+- **Real photos added**: 7 of the uploaded property photos are now live —
+  hero image, two room-type photo cards, and a 7-photo gallery grid.
+  3 uploaded photos were left out (visible personal items/luggage in
+  frame) since this is a public site.
+- **Premium visual pass**, inspired by the reference site screenshot:
+  - Added a slim top utility bar (phone/email) above the main nav.
+  - Hero now shows an actual room photo in a tilted framed card with a
+    floating "Starting ₹5,000/mo" price badge, instead of the flat SVG
+    illustration.
+  - Rooms & Rates section leads with two photo-based room cards (image +
+    price badge + description) before the tariff-board food add-on note —
+    closer to how the reference site presents its "Rooms" section, while
+    keeping the site's own tariff-board signature for the food pricing.
+- Location map now embeds real Google Maps (Fatehganj, Vadodara) instead
+  of the illustrated placeholder — exact address pin still pending.
+
+### Next phase ideas (not built yet)
+- Pin the map to the exact building once the address is confirmed.
+- Swap in the 3 excluded photos if cleaner versions become available.
+- Testimonials / reviews section, if wanted (seen on the reference site).

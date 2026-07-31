@@ -3,53 +3,50 @@
 Standalone marketing website for Chhatrapati PG, Fatehganj. Plain HTML/CSS/JS
 — no build step, so it deploys to Vercel as-is.
 
-## Before you deploy — remaining items
+## Still to do
 
-Phone (`+91 88570 09635`), WhatsApp, and email (`pgchatrapati@gmail.com`) are
-already set in `index.html`. Still to do:
+1. **Exact map pin** — the Location section embeds a real Google Map (no
+   API key needed), currently centered on "Fatehganj, Vadodara". To pin it
+   to your exact building, open Google Maps, search your address, tap
+   **Share → Embed a map**, and swap in the `src` it gives you for the
+   `<iframe>` in the Location section of `index.html`.
+2. **More photos** — the gallery uses 7 of your uploaded photos (see
+   below). Send more any time and they can be dropped straight into
+   `images/`.
 
-1. **Photos** — see "Gallery photos" below.
-2. **Exact map pin** — the Location section now embeds a real Google Map
-   (no API key needed), currently centered on "Fatehganj, Vadodara". If you
-   want it pinned to your exact building, replace the `q=Fatehganj%2C%20Vadodara`
-   part of the iframe `src` in `index.html` with your precise address
-   (URL-encoded), or paste in the `src` from Google Maps' own "Share → Embed
-   a map" option for full accuracy.
+## Rooms & rates (as of this build)
 
-## Gallery photos
+| Sharing | Rent | + Food (optional) |
+|---|---|---|
+| Double sharing | ₹6,000/mo | +₹3,000/mo |
+| Triple sharing | ₹5,000/mo | +₹3,000/mo |
 
-The gallery now loads real images from the `images/` folder. Add your
-photos there using these exact filenames:
+Food is shown as an optional add-on, not bundled into the rent. To change
+any of these numbers, edit the `.room-card` blocks (photo cards) and the
+`.board__row` (food add-on row) in the Rooms section of `index.html`.
 
-- `images/double-room.jpg`
-- `images/dining.jpg`
-- `images/study-corner.jpg`
-- `images/triple-room.jpg`
-- `images/building.jpg`
+## Gallery / room photos
 
-Any spot without a matching file just shows a plain placeholder pattern —
-nothing breaks, and photos appear automatically as you add them, no code
-changes needed.
+Real photos are now wired in from the `images/` folder:
+
+- `images/double-sharing.jpg` — used in the hero photo and the Double
+  sharing room card
+- `images/triple-sharing.jpg` — used in the Triple sharing room card
+- `images/triple-sharing-alt.jpg`, `images/twin-room.jpg`,
+  `images/cozy-room.jpg`, `images/study-desk.jpg`, `images/kitchen.jpg` —
+  used in the Gallery section
+
+Three of your uploaded photos weren't used (the ones with visible personal
+items/luggage in frame) since this is a public-facing site — happy to swap
+in any of them, or new photos, whenever you send them.
 
 ## Enquiry form
 
-The Contact section now has a small form (name, phone, sharing type,
-gender) that opens WhatsApp with those details pre-filled as a message —
-no backend or database needed. If your WhatsApp number ever changes, update
+The Contact section has a small form (name, phone, sharing type, gender)
+that opens WhatsApp with those details pre-filled as a message — no
+backend or database needed. If the WhatsApp number ever changes, update
 `WHATSAPP_NUMBER` in `js/script.js` as well as the WhatsApp card in
 `index.html`.
-
-## Rooms & rates shown
-
-| Sharing | For | Rate |
-|---|---|---|
-| Double | Male | ₹8,500/mo |
-| Double | Female | ₹10,000/mo |
-| Triple | Male | ₹6,000/mo |
-| Triple | Female | ₹5,000/mo |
-
-These sit inside the overall ₹5,000–10,000 range you asked for — adjust the
-exact numbers in the `.board__row` blocks in `index.html` any time.
 
 ## Deploy to Vercel
 
@@ -71,8 +68,9 @@ required.
 
 ```
 chhatrapati-pg/
-├── index.html        # all page sections
+├── index.html         # all page sections
 ├── css/style.css      # design tokens + styles
-├── js/script.js       # nav toggle, scroll reveal, footer year
+├── js/script.js       # nav toggle, scroll reveal, footer year, enquiry form
+├── images/            # real property photos
 └── CHANGELOG.md
 ```

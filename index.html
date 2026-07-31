@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Chhatrapati PG — Premium Coliving, Fatehganj</title>
-<meta name="description" content="Premium PG accommodation in Fatehganj. Double & Triple sharing for Males & Females. Fully furnished with food, AC, WiFi. ₹5,000–₹10,000/month.">
+<meta name="description" content="Premium PG accommodation in Fatehganj. Double & Triple sharing for Males & Females. Fully furnished with AC & WiFi. Rooms from ₹5,000/month, food available at ₹3,000 extra.">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -15,6 +15,14 @@
 <body>
 
 <div class="grain"></div>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="topbar__inner">
+    <a href="tel:+918857009635">📞 +91 88570 09635</a>
+    <a href="mailto:pgchatrapati@gmail.com">✉️ pgchatrapati@gmail.com</a>
+  </div>
+</div>
 
 <!-- NAV -->
 <header class="nav" id="nav">
@@ -47,49 +55,35 @@
         Your home away<br>from home, <em>this term.</em>
       </h1>
       <p class="hero__sub">
-        Fully furnished double &amp; triple sharing rooms with home‑style food,
-        AC and WiFi included — a five‑minute walk from Fatehganj's college gates.
+        Fully furnished double &amp; triple sharing rooms with AC and WiFi
+        included — home‑style food available as an add‑on — a five‑minute
+        walk from Fatehganj's college gates.
       </p>
       <div class="hero__actions">
         <a href="#rooms" class="btn btn--marigold">See rooms &amp; rates</a>
         <a href="tel:+918857009635" class="btn btn--ghost">Call now</a>
       </div>
       <div class="hero__meta">
-        <div><span class="num">₹5,000–10,000</span><span class="label">per month</span></div>
-        <div><span class="num">2 &amp; 3</span><span class="label">sharing options</span></div>
+        <div><span class="num">₹5,000–6,000</span><span class="label">room rent / month</span></div>
+        <div><span class="num">+₹3,000</span><span class="label">food, if you want it</span></div>
         <div><span class="num">24×7</span><span class="label">power &amp; water</span></div>
       </div>
     </div>
-    <div class="hero__art" aria-hidden="true">
-      <svg viewBox="0 0 360 420" fill="none" xmlns="http://www.w3.org/2000/svg" class="building-svg">
-        <rect x="40" y="60" width="280" height="330" rx="6" fill="var(--ink)"/>
-        <rect x="40" y="60" width="280" height="34" rx="6" fill="var(--teal)"/>
-        <g class="windows">
-          <rect x="66" y="120" width="46" height="46" rx="3" fill="var(--marigold)"/>
-          <rect x="128" y="120" width="46" height="46" rx="3" fill="var(--paper)"/>
-          <rect x="190" y="120" width="46" height="46" rx="3" fill="var(--paper)"/>
-          <rect x="252" y="120" width="46" height="46" rx="3" fill="var(--marigold)"/>
-
-          <rect x="66" y="188" width="46" height="46" rx="3" fill="var(--paper)"/>
-          <rect x="128" y="188" width="46" height="46" rx="3" fill="var(--marigold)"/>
-          <rect x="190" y="188" width="46" height="46" rx="3" fill="var(--paper)"/>
-          <rect x="252" y="188" width="46" height="46" rx="3" fill="var(--paper)"/>
-
-          <rect x="66" y="256" width="46" height="46" rx="3" fill="var(--marigold)"/>
-          <rect x="128" y="256" width="46" height="46" rx="3" fill="var(--paper)"/>
-          <rect x="190" y="256" width="46" height="46" rx="3" fill="var(--marigold)"/>
-          <rect x="252" y="256" width="46" height="46" rx="3" fill="var(--paper)"/>
-        </g>
-        <rect x="150" y="322" width="60" height="68" rx="3" fill="var(--marigold)"/>
-        <circle cx="196" cy="356" r="3.5" fill="var(--ink)"/>
-      </svg>
+    <div class="hero__art">
+      <div class="hero__photo">
+        <img src="images/double-sharing.jpg" alt="A room at Chhatrapati PG">
+      </div>
+      <div class="hero__badge">
+        <span class="hero__badge-from">Starting</span>
+        <span class="hero__badge-price">₹5,000<small>/mo</small></span>
+      </div>
       <div class="hero__pin">
-        <span class="hero__pin-dot"></span> Fatehganj, near college road
+        <span class="hero__pin-dot"></span> Fatehganj
       </div>
     </div>
   </section>
 
-  <!-- TARIFF BOARD (signature element) -->
+  <!-- ROOMS & RATES (signature element) -->
   <section class="tariff" id="rooms">
     <div class="section-head">
       <p class="eyebrow">Rooms &amp; rates</p>
@@ -97,46 +91,41 @@
       <p class="section-sub">One flat, honest rate card — no hidden charges, no surprises at month end.</p>
     </div>
 
+    <div class="rooms-grid">
+      <article class="room-card">
+        <div class="room-card__photo">
+          <img src="images/double-sharing.jpg" alt="Double sharing room">
+          <span class="room-card__price">₹6,000<small>/mo</small></span>
+        </div>
+        <div class="room-card__body">
+          <h3>Double sharing</h3>
+          <p>Two beds, wardrobe space each, AC &amp; WiFi included.</p>
+        </div>
+      </article>
+
+      <article class="room-card">
+        <div class="room-card__photo">
+          <img src="images/triple-sharing.jpg" alt="Triple sharing room">
+          <span class="room-card__price">₹5,000<small>/mo</small></span>
+        </div>
+        <div class="room-card__body">
+          <h3>Triple sharing</h3>
+          <p>Three beds, AC &amp; WiFi included — our most booked option.</p>
+        </div>
+      </article>
+    </div>
+
     <div class="board">
       <span class="board__pin"></span>
-      <div class="board__row board__row--head">
-        <span>Sharing</span><span>For</span><span>Monthly rate</span>
-      </div>
-
+      <p class="board__note board__note--lead">Food is optional, not forced into the rent.</p>
       <div class="board__row">
         <span class="room-type">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M4 18v-7a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v7M2 18h20M6 11V7a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
-          Double sharing
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M7 3v7a2 2 0 0 0 2 2v9M7 3a2 2 0 0 0-2 2v5M17 3v18M17 3c-2.2 0-4 2.5-4 6s1.8 6 4 6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Home‑style food (breakfast, lunch &amp; dinner)
         </span>
-        <span class="tag tag--male">Male</span>
-        <span class="rate">₹8,500<small>/mo</small></span>
+        <span class="rate rate--2col">+₹3,000<small>/mo</small></span>
       </div>
-      <div class="board__row">
-        <span class="room-type">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M4 18v-7a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v7M2 18h20M6 11V7a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
-          Double sharing
-        </span>
-        <span class="tag tag--female">Female</span>
-        <span class="rate">₹10,000<small>/mo</small></span>
-      </div>
-      <div class="board__row">
-        <span class="room-type">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M3 19v-6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v6M1 19h22M5 11V7a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
-          Triple sharing
-        </span>
-        <span class="tag tag--male">Male</span>
-        <span class="rate">₹6,000<small>/mo</small></span>
-      </div>
-      <div class="board__row">
-        <span class="room-type">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M3 19v-6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v6M1 19h22M5 11V7a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
-          Triple sharing
-        </span>
-        <span class="tag tag--female">Female</span>
-        <span class="rate">₹5,000<small>/mo</small></span>
-      </div>
-
-      <p class="board__note">Rates include food, AC, WiFi &amp; housekeeping. Refundable deposit applies — ask us for the current move‑in terms.</p>
+      <p class="board__note">Rates cover rent, AC, WiFi &amp; housekeeping. Refundable deposit applies — ask us for the current move‑in terms.</p>
     </div>
   </section>
 
@@ -204,28 +193,36 @@
     <div class="section-head">
       <p class="eyebrow">A look inside</p>
       <h2>Rooms &amp; common areas</h2>
-      <p class="section-sub gallery__note">Drop your photos into the <code>images/</code> folder using the filenames listed in the README — they'll appear automatically. Until then, a placeholder pattern shows in their place.</p>
+      <p class="section-sub gallery__note">A few corners of the property — more photos coming soon.</p>
     </div>
     <div class="gallery__grid">
       <div class="gallery__item gallery__item--tall">
-        <img src="images/double-room.jpg" alt="Double sharing room" loading="lazy" onerror="this.closest('.gallery__item').classList.add('gallery__item--empty')">
+        <img src="images/triple-sharing.jpg" alt="Triple sharing room" loading="lazy">
+        <span>Triple sharing room</span>
+      </div>
+      <div class="gallery__item">
+        <img src="images/double-sharing.jpg" alt="Double sharing room" loading="lazy">
         <span>Double sharing room</span>
       </div>
       <div class="gallery__item">
-        <img src="images/dining.jpg" alt="Common dining area" loading="lazy" onerror="this.closest('.gallery__item').classList.add('gallery__item--empty')">
-        <span>Common dining area</span>
+        <img src="images/kitchen.jpg" alt="Kitchen" loading="lazy">
+        <span>Kitchen</span>
       </div>
       <div class="gallery__item">
-        <img src="images/study-corner.jpg" alt="Study corner" loading="lazy" onerror="this.closest('.gallery__item').classList.add('gallery__item--empty')">
+        <img src="images/study-desk.jpg" alt="Study corner" loading="lazy">
         <span>Study corner</span>
       </div>
-      <div class="gallery__item">
-        <img src="images/triple-room.jpg" alt="Triple sharing room" loading="lazy" onerror="this.closest('.gallery__item').classList.add('gallery__item--empty')">
-        <span>Triple sharing room</span>
-      </div>
       <div class="gallery__item gallery__item--wide">
-        <img src="images/building.jpg" alt="Building exterior" loading="lazy" onerror="this.closest('.gallery__item').classList.add('gallery__item--empty')">
-        <span>Building exterior</span>
+        <img src="images/twin-room.jpg" alt="Another room" loading="lazy">
+        <span>Twin room</span>
+      </div>
+      <div class="gallery__item">
+        <img src="images/cozy-room.jpg" alt="Single bed room" loading="lazy">
+        <span>Single room</span>
+      </div>
+      <div class="gallery__item">
+        <img src="images/triple-sharing-alt.jpg" alt="Triple sharing room with lounge seating" loading="lazy">
+        <span>Triple sharing, another view</span>
       </div>
     </div>
   </section>
@@ -266,7 +263,7 @@
         <a href="tel:+918857009635" class="contact__card">
           <svg viewBox="0 0 24 24" fill="none"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3 19.5 19.5 0 0 1-6-6 19.8 19.8 0 0 1-3-8.7A2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .3 2 .7 3a2 2 0 0 1-.4 2.1L8 10.3a16 16 0 0 0 6 6l1.5-1.4a2 2 0 0 1 2.1-.4c1 .4 2 .6 3 .7a2 2 0 0 1 1.4 2.1Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
           <span>Call</span>
-          <strong>+91 98000 00000</strong>
+          <strong>+91 88570 09635</strong>
         </a>
         <a href="https://wa.me/918857009635?text=Hi%2C%20I%27m%20interested%20in%20a%20room%20at%20Chhatrapati%20PG" class="contact__card" target="_blank" rel="noopener">
           <svg viewBox="0 0 24 24" fill="none"><path d="M20.5 3.5a10.5 10.5 0 0 0-17.6 11L2 21l6.6-1.7a10.5 10.5 0 0 0 15-15.8Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
