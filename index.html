@@ -8,13 +8,21 @@
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,500&family=Work+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,500&family=Manrope:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 
 <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 
-<div class="grain"></div>
+<div class="grain" aria-hidden="true"></div>
+
+<!-- Announcement bar — hidden unless the active theme sets `announcement` (see js/theme-engine.js) -->
+<div id="announcementBar" class="announcement-bar" hidden>
+  <div class="announcement-bar__inner">
+    <span class="announcement-bar__icon" id="announcementIcon" aria-hidden="true"></span>
+    <span class="announcement-bar__text" id="announcementText"></span>
+  </div>
+</div>
 
 <!-- TOP BAR -->
 <div class="topbar">
@@ -38,7 +46,7 @@
       <a href="#location">Location</a>
       <a href="#contact">Contact</a>
     </nav>
-    <a href="#contact" class="btn btn--small btn--marigold nav__cta">Book a visit</a>
+    <a href="#contact" class="btn btn--small btn--brass nav__cta">Book a visit</a>
     <button class="nav__toggle" id="navToggle" aria-label="Toggle menu" aria-expanded="false">
       <span></span><span></span><span></span>
     </button>
@@ -48,38 +56,32 @@
 <main id="top">
 
   <!-- HERO -->
-  <section class="hero">
-    <div class="hero__inner">
-      <p class="eyebrow">Fatehganj · Males &amp; Females</p>
-      <h1 class="hero__title">
+  <section class="hero" id="hero">
+    <div class="hero__bg">
+      <img src="images/triple-sharing.jpg" alt="" loading="eager" fetchpriority="high">
+    </div>
+    <div class="hero__scrim"></div>
+    <div class="hero__decoration" aria-hidden="true"></div>
+    <div class="hero__content">
+      <p class="eyebrow eyebrow--light">Fatehgunj · Vadodara</p>
+      <h1 class="hero__title" id="heroTitle">
         Your home away<br>from home, <em>this term.</em>
       </h1>
-      <p class="hero__sub">
+      <p class="hero__sub" id="heroSub">
         Fully furnished double &amp; triple sharing rooms with AC and WiFi
         included — home‑style food available as an add‑on — a five‑minute
-        walk from Fatehganj's college gates.
+        walk from Fatehgunj's college gates.
       </p>
+      <p class="countdown-badge" id="countdownBadge" hidden></p>
       <div class="hero__actions">
-        <a href="#rooms" class="btn btn--marigold">See rooms &amp; rates</a>
-        <a href="tel:+918857009635" class="btn btn--ghost">Call now</a>
-      </div>
-      <div class="hero__meta">
-        <div><span class="num">₹5,000–6,000</span><span class="label">room rent / month</span></div>
-        <div><span class="num">+₹3,000</span><span class="label">food, if you want it</span></div>
-        <div><span class="num">24×7</span><span class="label">power &amp; water</span></div>
+        <a href="#rooms" class="btn btn--brass" id="heroPrimaryCta">See rooms &amp; rates</a>
+        <a href="tel:+918857009635" class="btn btn--ghost-light">Call now</a>
       </div>
     </div>
-    <div class="hero__art">
-      <div class="hero__photo">
-        <img src="images/double-sharing.jpg" alt="A room at Chhatrapati PG">
-      </div>
-      <div class="hero__badge">
-        <span class="hero__badge-from">Starting</span>
-        <span class="hero__badge-price">₹5,000<small>/mo</small></span>
-      </div>
-      <div class="hero__pin">
-        <span class="hero__pin-dot"></span> Fatehganj
-      </div>
+    <div class="hero__meta">
+      <div><span class="num">₹5,000–6,000</span><span class="label">room rent / month</span></div>
+      <div><span class="num">+₹3,000</span><span class="label">food, if you want it</span></div>
+      <div><span class="num">24×7</span><span class="label">power &amp; water</span></div>
     </div>
   </section>
 
@@ -87,45 +89,50 @@
   <section class="tariff" id="rooms">
     <div class="section-head">
       <p class="eyebrow">Rooms &amp; rates</p>
-      <h2>The tariff board</h2>
-      <p class="section-sub">One flat, honest rate card — no hidden charges, no surprises at month end.</p>
+      <h2>Simple, honest pricing</h2>
+      <p class="section-sub">One flat rate per room. No hidden charges, no surprises at month end.</p>
     </div>
 
     <div class="rooms-grid">
       <article class="room-card">
         <div class="room-card__photo">
-          <img src="images/double-sharing.jpg" alt="Double sharing room">
-          <span class="room-card__price">₹6,000<small>/mo</small></span>
+          <img src="images/double-sharing.jpg" alt="Double sharing room" loading="lazy">
         </div>
         <div class="room-card__body">
-          <h3>Double sharing</h3>
+          <div class="room-card__row">
+            <h3>Double sharing</h3>
+            <span class="room-card__price">₹6,000<small>/mo</small></span>
+          </div>
           <p>Two beds, wardrobe space each, AC &amp; WiFi included.</p>
         </div>
       </article>
 
       <article class="room-card">
         <div class="room-card__photo">
-          <img src="images/triple-sharing.jpg" alt="Triple sharing room">
-          <span class="room-card__price">₹5,000<small>/mo</small></span>
+          <img src="images/triple-sharing.jpg" alt="Triple sharing room" loading="lazy">
         </div>
         <div class="room-card__body">
-          <h3>Triple sharing</h3>
+          <div class="room-card__row">
+            <h3>Triple sharing</h3>
+            <span class="room-card__price">₹5,000<small>/mo</small></span>
+          </div>
           <p>Three beds, AC &amp; WiFi included — our most booked option.</p>
         </div>
       </article>
     </div>
 
-    <div class="board">
-      <span class="board__pin"></span>
-      <p class="board__note board__note--lead">Food is optional, not forced into the rent.</p>
-      <div class="board__row">
-        <span class="room-type">
+    <div class="rate-card">
+      <div class="rate-card__row">
+        <div class="rate-card__label">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M7 3v7a2 2 0 0 0 2 2v9M7 3a2 2 0 0 0-2 2v5M17 3v18M17 3c-2.2 0-4 2.5-4 6s1.8 6 4 6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          Home‑style food (breakfast, lunch &amp; dinner)
-        </span>
-        <span class="rate rate--2col">+₹3,000<small>/mo</small></span>
+          <div>
+            <strong>Home‑style food</strong>
+            <span>Breakfast, lunch &amp; dinner — optional, not forced into the rent</span>
+          </div>
+        </div>
+        <span class="rate-card__price">+ ₹3,000<small>/mo</small></span>
       </div>
-      <p class="board__note">Rates cover rent, AC, WiFi &amp; housekeeping. Refundable deposit applies — ask us for the current move‑in terms.</p>
+      <p class="rate-card__note">Rates cover rent, AC, WiFi &amp; housekeeping. Refundable deposit applies — ask us for the current move‑in terms.</p>
     </div>
   </section>
 
@@ -305,7 +312,7 @@
               </select>
             </div>
           </div>
-          <button type="submit" class="btn btn--marigold enquiry__submit">Send via WhatsApp</button>
+          <button type="submit" class="btn btn--brass enquiry__submit">Send via WhatsApp</button>
         </form>
       </div>
     </div>
@@ -319,6 +326,13 @@
     <span>Made for people who'd rather be studying than house‑hunting.</span>
   </div>
 </footer>
+
+<!-- Theme engine — order matters: config/data files first, engine last -->
+<script src="js/theme-config.js"></script>
+<script src="js/festival-calendar.js"></script>
+<script src="js/campaign-config.js"></script>
+<script src="js/theme-engine.js"></script>
+<script src="js/admin-api.js"></script>
 
 <script src="js/script.js"></script>
 </body>

@@ -8,6 +8,13 @@ Standalone marketing website for Chhatrapati PG, Fatehganj. Plain HTML/CSS/JS
 - **More photos** — the gallery uses 7 of your uploaded photos (see
   below). Send more any time and they can be dropped straight into
   `images/`.
+- **A higher-resolution hero photo, if you have one** — the hero's
+  full-bleed background photo (`images/triple-sharing.jpg`) is the
+  largest image on the page, and none of the 7 uploaded photos are much
+  bigger than ~1000px wide. On a large desktop screen it gets stretched
+  a bit beyond its native size. A landscape photo around 1920px wide
+  would look noticeably crisper there — everything else on the page
+  (room cards, gallery) is already sized appropriately.
 
 ## Rooms & rates (as of this build)
 
