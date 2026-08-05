@@ -54,8 +54,11 @@
 
   /**
    * Resolves which theme should be active right now, without applying it.
+   * Priority (highest wins): campaign > festival (which is itself
+   * remembrance > national > celebration, resolved in festival-calendar.js)
+   * > monthly theme > season > default.
    * @param {Date} [date] defaults to now
-   * @returns {{source: 'campaign'|'festival'|'default', entry: Object|null, theme: Object}}
+   * @returns {{source: 'campaign'|'festival'|'monthly'|'season'|'default', entry: Object|null, theme: Object}}
    */
   function getActiveTheme(date) {
     var config = window.PGTheme.config || {};
@@ -82,6 +85,30 @@
         source: "festival",
         entry: festival,
         theme: config[festival.themeId] || fallback,
+      };
+    }
+
+    var monthly =
+      typeof window.PGTheme.getActiveMonthlyTheme === "function"
+        ? window.PGTheme.getActiveMonthlyTheme(date)
+        : null;
+    if (monthly) {
+      return {
+        source: "monthly",
+        entry: monthly,
+        theme: config[monthly.themeId] || fallback,
+      };
+    }
+
+    var season =
+      typeof window.PGTheme.getActiveSeason === "function"
+        ? window.PGTheme.getActiveSeason(date)
+        : null;
+    if (season) {
+      return {
+        source: "season",
+        entry: season,
+        theme: config[season.themeId] || fallback,
       };
     }
 

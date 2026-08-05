@@ -38,15 +38,17 @@
 
     // Flat CSS-custom-property map. Key "brass-deep" -> --brass-deep.
     vars: {
-      ink: "#16261F",
-      brass: "#B8935A",
-      "brass-deep": "#96723E",
-      "brass-tint": "#F1E6D3",
+      ink: "#4A1620",
+      brass: "#C99A3D",
+      "brass-deep": "#A17A2A",
+      "brass-tint": "#F3E7C9",
       ivory: "#F7F3EA",
       charcoal: "#2A2620",
       line: "#E3DCC9",
       card: "#FFFFFF",
       muted: "#75705F",
+      whatsapp: "#3E8C5A",
+      "whatsapp-deep": "#2E6E45",
 
       "font-display": "'Fraunces', serif",
       "font-body": "'Manrope', sans-serif",
@@ -392,6 +394,36 @@
   ];
 
   indianCalendarThemes.forEach(function (opts) {
+    window.PGTheme.config[opts.id] = makeAccentTheme(opts);
+  });
+
+  /**
+   * ---------------------------------------------------------------------
+   * Monthly Premium Themes
+   * ---------------------------------------------------------------------
+   * One refined, muted accent per month (see monthly-themes.js for the
+   * month → themeId mapping and the priority/on-by-default rationale).
+   * Same accent-only-override pattern as everything else above — colors
+   * are deliberately desaturated and tonal, never bright or "colorful",
+   * per the brief. `heroDecoration: null` on every one of these — see
+   * the design note in monthly-themes.js for why.
+   */
+  var monthlyThemes = [
+    { id: "monthly-january", name: "January — Frost Blue & Gold", brass: "#8AA0B0", brassDeep: "#6B7F8E", brassTint: "#E6ECEF", heroDecoration: null },
+    { id: "monthly-february", name: "February — Warm Rose & Cream", brass: "#BC8B8B", brassDeep: "#946A6A", brassTint: "#F1DFDF", heroDecoration: null },
+    { id: "monthly-march", name: "March — Fresh Green", brass: "#84A173", brassDeep: "#66805A", brassTint: "#E3EBDE", heroDecoration: null },
+    { id: "monthly-april", name: "April — Soft Orange", brass: "#CC8F5A", brassDeep: "#A16F42", brassTint: "#F4E3D0", heroDecoration: null },
+    { id: "monthly-may", name: "May — Golden Summer", brass: "#CBA249", brassDeep: "#9E7E35", brassTint: "#F3E7C8", heroDecoration: null },
+    { id: "monthly-june", name: "June — Rain Blue", brass: "#6F92A8", brassDeep: "#557187", brassTint: "#DFE9EE", heroDecoration: null },
+    { id: "monthly-july", name: "July — Deep Monsoon", brass: "#556E8A", brassDeep: "#40546A", brassTint: "#DDE3EA", heroDecoration: null },
+    { id: "monthly-august", name: "August — Saffron & Navy", brass: "#B97A3D", brassDeep: "#8F5E2E", brassTint: "#EFDFC7", heroDecoration: null },
+    { id: "monthly-september", name: "September — Emerald", brass: "#5C9179", brassDeep: "#46705D", brassTint: "#DCEBE4", heroDecoration: null },
+    { id: "monthly-october", name: "October — Royal Gold", brass: "#B99544", brassDeep: "#8F7332", brassTint: "#F0E5C7", heroDecoration: null },
+    { id: "monthly-november", name: "November — Deep Maroon", brass: "#8C4F4F", brassDeep: "#6B3B3B", brassTint: "#EAD8D8", heroDecoration: null },
+    { id: "monthly-december", name: "December — Winter Silver", brass: "#8C8F99", brassDeep: "#6C6F79", brassTint: "#E7E8EB", heroDecoration: null },
+  ];
+
+  monthlyThemes.forEach(function (opts) {
     window.PGTheme.config[opts.id] = makeAccentTheme(opts);
   });
 })();

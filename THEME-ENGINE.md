@@ -270,7 +270,13 @@ This matches the engine-wide chain: campaign > remembrance > national >
 festivals > seasonal > default (campaigns are still resolved one level up
 in `theme-engine.js` and always outrank everything here).
 
-**Known 2026 collisions, and how they resolve:**
+**Known 2026 collisions (exact-day basis), and how they resolved at the time:**
+
+> **Superseded by Phase 8** — these entries now have multi-day active
+> windows (see Phase 8 below), so this table only reflects exact-day
+> collisions as they stood when Phase 4 shipped. It's kept for history;
+> the full current picture is much bigger. Don't use this table to
+> reason about current behavior — see Phase 8.
 
 | Date | Entries | Winner | Why |
 |---|---|---|---|
@@ -282,6 +288,7 @@ in `theme-engine.js` and always outrank everything here).
 Full, current list for any year is always available via
 `window.PGTheme.admin.PriorityManager.listFestivalCollisions(year)` (Phase 6) —
 that's now the source of truth for this table, not manual inspection.
+
 
 ### Shared themes (DRY, not 40 near-duplicate theme objects)
 
@@ -570,3 +577,278 @@ was verified already correct.
       correctly, nothing broken.
 - [x] Image ↔ reference audit: every `images/*.jpg` file is referenced
       by `index.html`, and every reference resolves to a real file.
+
+---
+
+## Phase 8 — Configurable Active Windows (not just the exact day)
+
+Every calendar entry now activates for a **window** around its date, not
+just the single exact day, per this brief:
+
+| Category | Default window |
+|---|---|
+| Festivals (`celebration`) | 5 days before → festival day → 5 days after |
+| National Days (`national`) | 3 days before → event day → 3 days after |
+| Remembrance Days (`remembrance`) | 1 day before → event day → 1 day after |
+| Seasonal (`seasonal`) | No expansion (0/0) — already wide date ranges by design |
+
+### Configuration-driven, not hardcoded
+
+- Defaults live in `festival-calendar.js`'s `CATEGORY_DEFAULT_WINDOW`
+  object — **not** in `theme-engine.js`, which never changed and never
+  reads a hardcoded window value.
+- Any entry can override its own window by adding `preDays`/`postDays` —
+  e.g. `{ id: "diwali", ..., preDays: 3, postDays: 7 }` would give Diwali
+  its own 3-before/7-after window regardless of the celebration default.
+  No engine change is ever needed for this — it's a config-object edit.
+- Multi-day entries (`dateRanges`, e.g. Navratri) get the window applied
+  to their whole range: `preDays` before the range's `start`, `postDays`
+  after its `end`.
+
+### Year-boundary handling
+
+A window can cross into the previous or next year (e.g. New Year's
+5-day pre-window starts in late December of the *previous* year). The
+matching logic checks each entry's core date/range for `date`'s year AND
+the two adjacent years, so this is handled automatically via real `Date`
+arithmetic — verified for both directions (New Year's pre-window
+starting Dec 27 of the prior year; New Year's Eve's post-window
+continuing into January of the next year).
+
+### `getMatchingFestivals()` — new, and now the shared source of truth
+
+`festival-calendar.js` now exports `getMatchingFestivals(date)`,
+returning every entry whose window covers `date`, before category/
+priority resolution. `getActiveFestival(date)` is now just this plus the
+existing category/priority resolution — and the Phase 6 admin API's
+collision detector calls the same `getMatchingFestivals()` rather than
+re-implementing date matching, so the two can never disagree about what
+"overlaps."
+
+### A real, important consequence: **wide windows mean MANY more overlaps**
+
+With ±5-day festival windows especially, the 2026 calendar has **34
+distinct overlapping date ranges** across the year (up from 4 known
+exact-day collisions before this phase) — verified via
+`admin.PriorityManager.listFestivalCollisions(2026)`, which now scans
+day-by-day and groups consecutive days with the same overlap into
+ranges, rather than checking only exact dates.
+
+More importantly, a new diagnostic — `admin.PriorityManager
+.listSilencedEntries(year)` — found that **two named festivals never
+win a single day of 2026 at all**: `dussehra` and `new-years-eve`. Their
+entire windows are always overlapped by a same-category neighbor with
+earlier array position (Navratri; New Year) or a higher-ranked category
+(Police Commemoration Day, Oct 20–22, sitting right on top of Dussehra's
+own exact day). This isn't a bug — the resolution rule did exactly what
+it's specified to do — but it's very likely not the intended outcome for
+two festivals that were explicitly configured. **This was deliberately
+left as a flagged finding, not silently fixed** — an earlier draft of
+this phase bumped Dussehra's `priority` to "solve" it, which was reverted
+because retuning priorities wasn't asked for and is a real editorial
+decision (which festival should visually "win" a shared week) that
+belongs to you, not to an unrequested code change. Fixes are a data-only
+edit in `festival-calendar.js` — raise `priority`, shrink `preDays`/
+`postDays`, or reorder the array — verify with
+`listSilencedEntries()` afterward.
+
+(The other 3 entries in that same silenced list —
+`lal-bahadur-shastri-jayanti` and all 4 `season-*` entries — aren't new
+findings: Lal Bahadur Shastri Jayanti losing to Gandhi Jayanti was
+already documented in Phase 4, and the seasonal entries are *expected*
+to never win while `seasonalThemesEnabled` is `false`.)
+
+### Verified for Phase 8
+
+- [x] All JS files pass `node --check`.
+- [x] Window boundaries verified precisely: a festival's exact 5th day
+      before/after is included, the 6th day before/after is not (tested
+      on Diwali); same pattern verified for national's ±3 (Hindi Diwas)
+      and remembrance's ±1 (Martyrs' Day).
+- [x] Year-boundary crossing verified both directions: New Year's
+      pre-window correctly starts Dec 27 of the *previous* year; New
+      Year's Eve's post-window correctly continues into January of the
+      *next* year, and correctly stops on day 6.
+- [x] Priority/category resolution reconfirmed unchanged and correct
+      under the new windowed matches (remembrance still always outranks
+      national/celebration; national still outranks celebration; same-
+      category ties still broken by `priority` then array order).
+- [x] Full regression: a quiet day with no nearby entries still resolves
+      to `default` (unchanged); an active campaign still outranks every
+      festival/national/remembrance window (unchanged); all 8 Phase 6
+      admin modules still load and function correctly against the new
+      matching logic.
+- [x] No hardcoded window values in `theme-engine.js` — confirmed by
+      inspection; it was not modified at all in this phase.
+- [x] `dussehra`/`new-years-eve` silencing found, verified, and
+      documented rather than silently patched.
+
+---
+
+## Premium UI/UX Polish — Phase 1: Design Foundation
+
+First phase of a separate, larger visual-polish initiative (not a
+content/branding redesign — see CHANGELOG for the full brief). This
+phase only adds design *tokens* and applies them to existing components;
+no new sections, no copy changes, no engine changes.
+
+### New tokens (`css/style.css` `:root`)
+
+- `--shadow-sm/md/lg/glow` — layered, soft shadows (multiple stops) for
+  a more premium sense of depth than the old single flat shadow.
+- `--glass-bg`/`--glass-border`/`--glass-blur` and `.glass`/`.glass-dark`
+  utility classes — `backdrop-filter` blur, with a `@supports` fallback
+  for browsers without it. Applied so far only to the nav (already had
+  ad-hoc blur; now uses the same tokens as everything else).
+- `--ease-premium` — a `cubic-bezier(0.16, 1, 0.3, 1)` "soft deceleration"
+  curve (the same family Apple/Linear-style sites use) for hovers and
+  reveals, replacing plain `ease`.
+- `--space-xs/sm/md/lg/xl` — a spacing scale; section padding now uses
+  `--space-xl` (7rem, up from a flat 6rem) for more breathing room.
+
+### Applied so far
+
+- Section heading scale bumped (`clamp(2rem, 3.8vw, 3rem)`, was
+  `clamp(1.9rem, 3.4vw, 2.6rem)`) and hero title scale bumped
+  (`clamp(2.6rem, 7vw, 4.6rem)`, was `clamp(2.4rem, 6.2vw, 4rem)`) for
+  more presence — same fonts, same copy, just larger/more confident.
+- Buttons, room cards, gallery items, amenity cards, and contact cards
+  all now use `--shadow-md`/`--shadow-lg` on hover (was a single flat
+  `rgba` shadow per component, inconsistent between them) and
+  `var(--ease-premium)` for the hover transition — one consistent depth
+  + motion language sitewide instead of several slightly different ones.
+- Scroll-reveal (`.reveal` in `css/style.css`, driven by `script.js`)
+  now travels further (28px, was 18px) with a subtle scale-in
+  (0.985→1) and the premium ease curve, and cascades with staggered
+  `transition-delay` within grids (amenities, room cards, gallery) —
+  still pure `opacity`/`transform`, still the same `IntersectionObserver`
+  in `script.js`, just tuned. Room cards and the rate-card were added to
+  the reveal target list (previously the whole Rooms section faded in
+  as one block; now each card cascades in individually).
+
+### Verified
+
+- [x] All JS files pass `node --check`; CSS brace-balanced.
+- [x] Theme engine regression check: a quiet day still resolves to
+      `default`; all 8 admin API modules still load — this phase touched
+      no `.js` theme/campaign/festival logic at all, only `style.css`
+      and the `script.js` reveal-target selector list.
+- [x] All new animations (`.reveal`, card hovers, button hovers) confirmed
+      to animate only `opacity`/`transform`/`box-shadow` — `box-shadow`
+      isn't compositor-accelerated like `transform`/`opacity`, so hover-
+      triggered shadow transitions are scoped to individual small
+      cards/buttons (never the whole page) to keep repaint cost low.
+- [x] `prefers-reduced-motion` override (Phase 1 of the theme engine,
+      untouched) still catches all of the above automatically.
+
+---
+
+## Premium UI/UX Polish — Phases 2-8 (Hero, Rooms, Amenities, Reviews-skipped, Gallery, Pricing, Contact)
+
+Summary (full detail in CHANGELOG.md per phase):
+
+- **Hero**: full-bleed photo, floating availability badge (honest copy —
+  room types, not a fabricated live-vacancy claim), scroll indicator
+  linking to Rooms, ambient radial light blended into the scrim, one-time
+  cinematic entrance animation, frosted-glass secondary CTA.
+- **Rooms**: larger photo-first cards, floating "Available" badge + price
+  tag on the photo, occupancy/bed-count meta (no fabricated square
+  footage — flagged in README for the owner to supply if wanted), feature
+  chips, a "Most booked" recommended ribbon on Triple sharing.
+- **Amenities**: converted to glass cards over a subtle ambient section
+  backdrop.
+- **Student Reviews**: skipped at the owner's explicit request rather
+  than filled with fabricated testimonials.
+- **Gallery**: photos are now real `<button>`s wired to a full lightbox
+  (prev/next, Escape/arrows, click-outside, focus return).
+- **Pricing**: no duplicate section — reused the Rooms cards instead.
+- **Contact/Map**: map gets a premium frame + hover-reveals-color filter;
+  WhatsApp (the real enquiry channel) now visually leads as the primary
+  CTA.
+
+All of the above are additive to `index.html`/`css/style.css`/
+`js/script.js` only — no theme/campaign/festival engine file was touched
+until the Monthly Themes work below.
+
+---
+
+## Monthly Premium Themes
+
+New automatic fallback tier, sitting between Festival and Season:
+
+```
+campaign > remembrance > national > festival > MONTHLY > season > default
+```
+
+### New file: `js/monthly-themes.js`
+
+Same shape as the other data files — one array (`window.PGTheme
+.monthlyThemes`, 12 entries, one per month) plus a lookup function
+(`getActiveMonthlyTheme(date)`). 12 matching theme entries live in
+`theme-config.js` (`monthly-january` … `monthly-december`), using the
+same accent-only-override factory as everything else — muted, tonal
+palettes, deliberately never bright ("Do NOT make the website colorful"
+from the brief). Every monthly theme has `heroDecoration: null` on
+purpose — see the design note at the top of `monthly-themes.js`: this
+tier is live most days of the year, so a permanent animation running
+365 days would fight the "never flashy" goal for no real benefit.
+
+### On by default — the one tier that is
+
+Campaigns and seasonal themes both default to `false` (opt-in). Monthly
+Themes default to `true` (`window.PGTheme.monthlyThemesEnabled`) because
+the brief explicitly asks for automatic behavior: *"If a month has no
+active campaign, remembrance day, national day or festival theme,
+automatically apply a premium monthly seasonal theme."* Set the flag to
+`false` to turn it off.
+
+### Engine change: `festival-calendar.js` split in two
+
+To let Monthly Themes sit between "festival" and "season" without
+theme-engine.js hardcoding any date logic, `festival-calendar.js`'s
+single `getActiveFestival()` was split:
+
+- `getActiveFestival(date)` — now only resolves remembrance/national/
+  celebration (seasonal explicitly excluded).
+- `getActiveSeason(date)` — new, resolves only seasonal entries (still
+  gated by `seasonalThemesEnabled`), reusing the exact same
+  `getMatchingFestivals()` data — no re-implemented date matching.
+
+`theme-engine.js`'s `getActiveTheme()` now calls, in order: campaign →
+`getActiveFestival()` → `getActiveMonthlyTheme()` → `getActiveSeason()`
+→ default.
+
+### Important, documented consequence: Season is now unreachable by default
+
+Because Monthly Themes match unconditionally on every single day
+(whenever nothing higher-priority is active) and rank ABOVE Season,
+**enabling `seasonalThemesEnabled` now has no visible effect** as long as
+`monthlyThemesEnabled` stays at its default (`true`) — Monthly always
+wins that tier first. This is the direct, unavoidable result of the
+exact priority order specified, not a bug. Verified programmatically: a
+monsoon-season date with `seasonalThemesEnabled = true` shows
+`monthly-july`; only after also setting `monthlyThemesEnabled = false`
+does it show `festival-season-monsoon`.
+
+### Verified
+
+- [x] All JS files pass `node --check` (including the two restructured
+      functions in `festival-calendar.js`).
+- [x] Quiet days with no campaign/festival correctly resolve to the
+      current month's theme (tested June, and confirmed January/November
+      "quiet" dates actually still show a festival, because those
+      festivals' wide windows are still active — correct per the
+      existing priority, not a monthly-theme bug).
+- [x] Festivals/national days/remembrance days confirmed to still
+      outrank monthly on their actual active days (Diwali, Republic Day,
+      Martyrs' Day all still resolve to their own theme, not that
+      month's).
+- [x] Campaign confirmed to still outrank monthly.
+- [x] Season's new unreachable-by-default status verified both ways:
+      visible only when `monthlyThemesEnabled` is explicitly set `false`.
+- [x] Disabling monthly (with season also off) correctly falls through
+      to `default`.
+- [x] Total registered themes: 57 (up from 45) — 12 new monthly themes
+      added, zero existing themes removed or renamed.
+- [x] All 8 Phase 6 admin API modules still load and function against
+      the restructured festival-calendar.js.

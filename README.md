@@ -5,6 +5,23 @@ Standalone marketing website for Chhatrapati PG, Fatehganj. Plain HTML/CSS/JS
 
 ## Still to do
 
+- **Real logo file** — you mentioned you have one. When you send it,
+  replace the text monogram at `.nav__mark` in `index.html` (currently
+  just shows "CP" in a circle) with `<img src="images/logo.png" ...>`
+  and drop the file into `images/`.
+- **Building exterior photo** — the hero currently uses a real interior
+  room photo (`images/triple-sharing.jpg`) as its full-bleed background.
+  If you send an actual exterior shot of the building, swap it in at
+  `.hero__bg img` in `index.html`.
+- **"Available" badges on room cards** — each room type shows a green
+  "Available" badge (`index.html`, search `room-card__badge`). If a
+  specific room type ever fills up, either remove that badge or change
+  its text (e.g. "Waitlist") for that card — it's plain text, easy to
+  edit, not connected to any live booking system.
+- **Room sizes** — the room cards intentionally don't show square
+  footage since I don't have real measurements for any room. If you'd
+  like exact sizes shown, send them over and I'll add a line to each
+  card.
 - **More photos** — the gallery uses 7 of your uploaded photos (see
   below). Send more any time and they can be dropped straight into
   `images/`.

@@ -2,15 +2,17 @@
    Chhatrapati PG — design tokens (premium pass)
    ========================================================================== */
 :root {
-  --ink: #16261F;         /* deep bottle-green-black — dark surfaces, headings */
-  --brass: #B8935A;       /* warm brass accent */
-  --brass-deep: #96723E;  /* brass hover / pressed */
-  --brass-tint: #F1E6D3;  /* pale brass wash for chips/icon backgrounds */
+  --ink: #4A1620;         /* deep maroon — dark surfaces, headings */
+  --brass: #C99A3D;       /* warm gold accent */
+  --brass-deep: #A17A2A;  /* gold hover / pressed */
+  --brass-tint: #F3E7C9;  /* pale gold wash for chips/icon backgrounds */
   --ivory: #F7F3EA;       /* page background */
   --charcoal: #2A2620;    /* body text, warm near-black */
   --line: #E3DCC9;        /* hairline borders / dividers */
   --card: #FFFFFF;
   --muted: #75705F;       /* secondary text */
+  --whatsapp: #3E8C5A;    /* dedicated WhatsApp-brand green, used only for WhatsApp CTAs */
+  --whatsapp-deep: #2E6E45;
 
   --font-display: 'Fraunces', serif;
   --font-body: 'Manrope', sans-serif;
@@ -18,6 +20,30 @@
 
   --radius: 16px;
   --container: 1140px;
+
+  /* ---- Premium polish pass: shadows, glass, motion, spacing ----
+     Tokens only — branding (ink/brass/ivory/fonts above) is untouched.
+     Existing components adopt these gradually across the polish phases;
+     nothing here is applied automatically just by existing. */
+  --shadow-sm: 0 2px 8px rgba(74,22,32,0.08);
+  --shadow-md: 0 12px 32px rgba(74,22,32,0.12), 0 2px 8px rgba(74,22,32,0.06);
+  --shadow-lg: 0 32px 72px rgba(74,22,32,0.18), 0 8px 24px rgba(74,22,32,0.09);
+  --shadow-glow: 0 0 48px rgba(201,154,61,0.30);
+
+  --glass-bg: rgba(255,255,255,0.62);
+  --glass-border: rgba(255,255,255,0.45);
+  --glass-blur: 18px;
+  --glass-dark-bg: rgba(74,22,32,0.55);
+  --glass-dark-border: rgba(247,243,234,0.14);
+
+  /* "Apple-style" smooth deceleration — used for reveals and premium hovers */
+  --ease-premium: cubic-bezier(0.16, 1, 0.3, 1);
+
+  --space-xs: 0.5rem;
+  --space-sm: 1rem;
+  --space-md: 2rem;
+  --space-lg: 4rem;
+  --space-xl: 7rem;
 }
 
 * { box-sizing: border-box; }
@@ -36,6 +62,7 @@ body {
   font-size: 16px;
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
+  overflow-x: hidden; /* defensive — no element should cause this to be needed, but guards against it */
 }
 
 img, svg { display: block; max-width: 100%; }
@@ -78,11 +105,43 @@ button { font-family: inherit; }
 main > section {
   max-width: var(--container);
   margin: 0 auto;
-  padding: 6rem 1.5rem;
+  padding: var(--space-xl) 1.5rem;
 }
-.section-head { max-width: 640px; margin-bottom: 3.4rem; }
-.section-head h2 { font-size: clamp(1.9rem, 3.4vw, 2.6rem); font-weight: 600; }
-.section-sub { margin-top: 1rem; color: var(--muted); max-width: 46ch; font-size: 1rem; }
+.section-head { max-width: 640px; margin-bottom: var(--space-lg); }
+.section-head h2 { font-size: clamp(2rem, 3.8vw, 3rem); font-weight: 600; letter-spacing: -0.01em; }
+.section-sub { margin-top: 1.1rem; color: var(--muted); max-width: 46ch; font-size: 1.05rem; line-height: 1.65; }
+
+.pricing-badges { display: flex; flex-wrap: wrap; gap: 0.6rem; margin-top: 1.3rem; }
+.pricing-badge {
+  display: inline-flex; align-items: center; gap: 0.4rem;
+  font-family: var(--font-mono); font-size: 0.76rem; font-weight: 500;
+  color: var(--brass-deep); background: var(--brass-tint);
+  padding: 0.4rem 0.85rem; border-radius: 999px;
+}
+.pricing-badge::before { content: "✓"; font-weight: 700; }
+
+/* ---- glass utilities (Phase 1 of the premium polish pass) ----
+   Applied selectively in later sections (nav, reviews, badges) — never
+   sitewide, per "glass effects only where appropriate". GPU-cheap:
+   backdrop-filter is compositor-accelerated on all modern browsers. */
+.glass {
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-border);
+}
+.glass-dark {
+  background: var(--glass-dark-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-dark-border);
+  color: var(--ivory);
+}
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  /* Graceful fallback for the handful of older browsers without backdrop-filter support */
+  .glass { background: rgba(255,255,255,0.92); }
+  .glass-dark { background: rgba(74,22,32,0.88); }
+}
 
 /* ---- buttons ---- */
 .btn {
@@ -91,17 +150,24 @@ main > section {
   border-radius: 999px;
   font-weight: 600; font-size: 0.92rem;
   border: 1.5px solid transparent;
-  transition: transform 0.15s ease, background 0.15s ease, border-color .15s ease, color .15s ease;
+  transition: transform 0.35s var(--ease-premium), box-shadow 0.35s var(--ease-premium), background 0.2s ease, border-color .2s ease, color .2s ease;
   white-space: nowrap;
 }
-.btn:hover { transform: translateY(-2px); }
+.btn:hover { transform: translateY(-3px); }
+.btn:active { transform: translateY(-1px) scale(0.98); }
 .btn:focus-visible { outline: 3px solid var(--brass); outline-offset: 3px; }
-.btn--brass { background: var(--brass); color: var(--ink); }
-.btn--brass:hover { background: var(--brass-deep); color: var(--ivory); }
+.btn--brass { background: var(--brass); color: var(--ink); box-shadow: var(--shadow-sm); }
+.btn--brass:hover { background: var(--brass-deep); color: var(--ivory); box-shadow: var(--shadow-md); }
+.btn--whatsapp { background: var(--whatsapp); color: var(--ivory); box-shadow: var(--shadow-sm); }
+.btn--whatsapp:hover { background: var(--whatsapp-deep); box-shadow: var(--shadow-md); }
 .btn--ghost { border-color: var(--ink); color: var(--ink); }
-.btn--ghost:hover { background: var(--ink); color: var(--ivory); }
-.btn--ghost-light { border-color: rgba(247,243,234,0.55); color: var(--ivory); }
-.btn--ghost-light:hover { background: var(--ivory); color: var(--ink); border-color: var(--ivory); }
+.btn--ghost:hover { background: var(--ink); color: var(--ivory); box-shadow: var(--shadow-md); }
+.btn--ghost-light {
+  border-color: rgba(247,243,234,0.4); color: var(--ivory);
+  background: rgba(247,243,234,0.08);
+  backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+}
+.btn--ghost-light:hover { background: var(--ivory); color: var(--ink); border-color: var(--ivory); box-shadow: var(--shadow-md); }
 .btn--small { padding: 0.6rem 1.2rem; font-size: 0.85rem; }
 
 /* ==========================================================================
@@ -110,7 +176,7 @@ main > section {
 .topbar { background: var(--ink); color: var(--brass-tint); }
 .topbar__inner {
   max-width: var(--container); margin: 0 auto; padding: 0.5rem 1.5rem;
-  display: flex; gap: 1.6rem; font-size: 0.76rem; font-family: var(--font-mono);
+  display: flex; flex-wrap: wrap; gap: 0.5rem 1.4rem; font-size: 0.76rem; font-family: var(--font-mono);
 }
 .topbar__inner a { opacity: 0.85; transition: opacity .15s ease; }
 .topbar__inner a:hover { opacity: 1; color: var(--brass); }
@@ -130,9 +196,11 @@ main > section {
 
 .nav {
   position: sticky; top: 0; z-index: 100;
-  background: rgba(247,243,234,0.9);
-  backdrop-filter: blur(10px);
+  background: rgba(247,243,234,0.82);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
   border-bottom: 1px solid var(--line);
+  transition: box-shadow .3s ease;
 }
 .nav__inner {
   max-width: var(--container); margin: 0 auto; padding: 1rem 1.5rem;
@@ -157,10 +225,10 @@ main > section {
 .nav__links a:hover { color: var(--brass-deep); }
 .nav__cta { display: none; }
 .nav__toggle {
-  width: 38px; height: 34px; background: none; border: none; cursor: pointer;
-  display: flex; flex-direction: column; justify-content: center; gap: 5px;
+  width: 44px; height: 44px; background: none; border: none; cursor: pointer;
+  display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 5px;
 }
-.nav__toggle span { height: 2px; background: var(--ink); border-radius: 2px; }
+.nav__toggle span { width: 22px; height: 2px; background: var(--ink); border-radius: 2px; }
 
 @media (min-width: 880px) {
   .nav__links { display: flex; }
@@ -190,20 +258,80 @@ main > section {
 .hero__bg img { width: 100%; height: 100%; object-fit: cover; }
 .hero__scrim {
   position: absolute; inset: 0; z-index: 1;
-  background: linear-gradient(180deg, rgba(22,38,31,0.78) 0%, rgba(22,38,31,0.55) 45%, rgba(22,38,31,0.92) 100%);
+  background:
+    radial-gradient(ellipse 60% 50% at 75% 30%, rgba(201,154,61,0.16) 0%, transparent 60%),
+    linear-gradient(180deg, rgba(74,22,32,0.78) 0%, rgba(74,22,32,0.55) 45%, rgba(74,22,32,0.92) 100%);
 }
 .hero__content {
   position: relative; z-index: 2;
   max-width: var(--container); width: 100%; margin: 0 auto;
   padding: 8rem 1.5rem 3rem;
 }
+.hero__content--enter {
+  opacity: 0; transform: translateY(22px);
+  animation: heroContentEnter 1s var(--ease-premium) 0.15s forwards;
+}
+@keyframes heroContentEnter {
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Floating availability badge */
+.hero__badge {
+  position: absolute; z-index: 3;
+  top: 6.5rem; right: 1.5rem;
+  display: flex; align-items: center; gap: 0.5rem;
+  padding: 0.6rem 1.1rem; border-radius: 999px;
+  font-family: var(--font-mono); font-size: 0.76rem;
+  max-width: 220px;
+}
+.hero__badge-dot {
+  position: relative;
+  width: 7px; height: 7px; border-radius: 50%;
+  background: #6FBF8C; flex-shrink: 0;
+}
+.hero__badge-dot::after {
+  content: ""; position: absolute; inset: -4px; border-radius: 50%;
+  border: 1.5px solid rgba(111,191,140,0.6);
+  animation: heroBadgePulse 2.4s ease-out infinite;
+}
+@keyframes heroBadgePulse {
+  0% { transform: scale(0.5); opacity: 0.9; }
+  100% { transform: scale(1.8); opacity: 0; }
+}
+@media (max-width: 640px) {
+  .hero__badge { top: auto; bottom: 1.2rem; right: 1rem; left: 1rem; max-width: none; justify-content: center; }
+}
+
+/* Scroll indicator */
+.hero__scroll {
+  position: absolute; z-index: 2; bottom: 1.6rem; left: 50%;
+  transform: translateX(-50%);
+  color: rgba(247,243,234,0.7);
+  animation: heroScrollBounce 2.2s var(--ease-premium) infinite;
+  transition: color .2s ease;
+}
+.hero__scroll:hover { color: var(--ivory); }
+@keyframes heroScrollBounce {
+  0%, 100% { transform: translateX(-50%) translateY(0); }
+  50% { transform: translateX(-50%) translateY(8px); }
+}
 .hero__title {
-  font-size: clamp(2.4rem, 6.2vw, 4rem);
+  font-size: clamp(2.6rem, 7vw, 4.6rem);
   font-weight: 600; color: var(--ivory); max-width: 16ch;
+  letter-spacing: -0.015em;
 }
 .hero__title em { font-style: italic; color: var(--brass); }
 .hero__sub { max-width: 48ch; margin: 1.6rem 0 2.2rem; color: rgba(247,243,234,0.82); font-size: 1.08rem; }
 .hero__actions { display: flex; gap: 1rem; flex-wrap: wrap; }
+.hero__trust { display: flex; gap: 0.6rem; flex-wrap: wrap; margin-top: 1.2rem; }
+.hero__trust-item {
+  display: inline-flex; align-items: center; gap: 0.4rem;
+  font-family: var(--font-mono); font-size: 0.74rem; color: rgba(247,243,234,0.85);
+  padding: 0.35rem 0.8rem; border-radius: 999px;
+  background: rgba(247,243,234,0.08); border: 1px solid rgba(247,243,234,0.2);
+  backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+}
+.hero__trust-item::before { content: "✓"; color: var(--brass); font-weight: 700; }
 
 /* Countdown badge (Phase 3 — campaigns only, hidden by default) */
 .countdown-badge {
@@ -226,10 +354,12 @@ main > section {
 
 /* ---- hero decoration (Phase 2 — festival/campaign only, off by default) ---
    Pure CSS, no extra DOM per effect. theme-engine.js only ever toggles one
-   of these two classes on #hero; opacity is 0 (nothing rendered) unless a
-   theme sets `heroDecoration`. Both effects animate opacity/background-
-   position only — no layout properties — and are skipped entirely under
-   prefers-reduced-motion via the global rule at the top of this file. */
+   of these classes on #hero; opacity is 0 (nothing rendered) unless a
+   theme sets `heroDecoration`. All effects animate opacity/transform only
+   (particles/stadium use an oversized element + transform:translate,
+   not background-position) — no layout properties — and are skipped
+   entirely under prefers-reduced-motion via the global rule at the top
+   of this file. */
 .hero__decoration {
   position: absolute; inset: 0; z-index: 1; pointer-events: none;
   opacity: 0; transition: opacity .6s ease;
@@ -250,14 +380,16 @@ main > section {
 }
 
 .hero--deco-particles .hero__decoration {
+  left: -20%; top: -20%; right: auto; bottom: auto;
+  width: 140%; height: 140%;
   background-image: radial-gradient(circle, var(--brass) 1.5px, transparent 1.5px);
   background-size: 60px 60px;
   opacity: 0.16;
   animation: heroParticleDrift 40s linear infinite;
 }
 @keyframes heroParticleDrift {
-  from { background-position: 0 0; }
-  to { background-position: 240px 480px; }
+  from { transform: translate(0, 0); }
+  to { transform: translate(-60px, -60px); }
 }
 
 /* ---- Phase 5 — premium campaign decorations ----
@@ -309,6 +441,8 @@ main > section {
 }
 
 .hero--deco-stadium .hero__decoration {
+  left: 0; right: 0; top: -20%; bottom: auto;
+  width: 100%; height: 140%;
   background: repeating-linear-gradient(
     180deg,
     var(--brass) 0px, var(--brass) 2px,
@@ -318,8 +452,8 @@ main > section {
   animation: heroStadiumSweep 18s linear infinite;
 }
 @keyframes heroStadiumSweep {
-  from { background-position: 0 0; }
-  to { background-position: 0 400px; }
+  from { transform: translateY(0); }
+  to { transform: translateY(40px); }
 }
 
 /* ---- Phase 5 — subtle premium CTA shimmer, campaign days only ----
@@ -347,27 +481,73 @@ body[data-theme^="campaign-"] .btn--brass::after {
    Rooms (photo cards)
    ========================================================================== */
 .rooms-grid {
-  display: grid; grid-template-columns: 1fr; gap: 1.6rem;
+  display: grid; grid-template-columns: 1fr; gap: 1.8rem;
   margin-bottom: 2.2rem;
 }
 .room-card {
   background: var(--card); border: 1px solid var(--line);
   border-radius: var(--radius); overflow: hidden;
-  transition: box-shadow .25s ease, transform .25s ease;
+  transition: box-shadow .4s var(--ease-premium), transform .4s var(--ease-premium);
 }
-.room-card:hover { box-shadow: 0 20px 44px rgba(22,38,31,0.12); transform: translateY(-3px); }
-.room-card__photo { aspect-ratio: 4/3; overflow: hidden; }
-.room-card__photo img { width: 100%; height: 100%; object-fit: cover; transition: transform .5s ease; }
-.room-card:hover .room-card__photo img { transform: scale(1.05); }
+.room-card:hover { box-shadow: var(--shadow-lg); transform: translateY(-4px); }
+.room-card__photo { position: relative; aspect-ratio: 5/4; overflow: hidden; }
+.room-card__photo img { width: 100%; height: 100%; object-fit: cover; transition: transform .6s var(--ease-premium); }
+.room-card:hover .room-card__photo img { transform: scale(1.06); }
+
+.room-card__badge {
+  position: absolute; top: 1rem; left: 1rem; z-index: 1;
+  background: rgba(247,243,234,0.92); color: var(--ink);
+  font-family: var(--font-mono); font-size: 0.7rem; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.04em;
+  padding: 0.35rem 0.75rem; border-radius: 999px;
+  display: flex; align-items: center; gap: 0.4rem;
+}
+.room-card__badge::before {
+  content: ""; width: 6px; height: 6px; border-radius: 50%; background: #3E8C5A;
+}
+.room-card__price-tag {
+  position: absolute; bottom: 1rem; left: 1rem; z-index: 1;
+  background: var(--ink); color: var(--ivory);
+  font-family: var(--font-mono); font-weight: 600; font-size: 1.05rem;
+  padding: 0.5rem 0.9rem; border-radius: 12px;
+}
+.room-card__price-tag small { font-weight: 400; color: rgba(247,243,234,0.65); font-size: 0.68rem; }
+
 .room-card__body { padding: 1.5rem 1.6rem 1.7rem; border-top: 1px solid var(--line); }
-.room-card__row { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; margin-bottom: 0.5rem; }
-.room-card__row h3 { font-size: 1.2rem; font-weight: 600; }
-.room-card__price { font-family: var(--font-mono); font-weight: 600; color: var(--brass-deep); font-size: 1.05rem; white-space: nowrap; }
-.room-card__price small { font-weight: 400; color: var(--muted); font-size: 0.72rem; }
-.room-card__body p { margin: 0; font-size: 0.92rem; color: var(--muted); }
+.room-card__body h3 { font-size: 1.25rem; font-weight: 600; margin-bottom: 0.5rem; }
+
+/* Recommended option — subtle emphasis, not a loud "SALE" banner */
+.room-card--recommended {
+  border-color: var(--brass);
+  box-shadow: var(--shadow-md);
+}
+.room-card--recommended:hover { box-shadow: var(--shadow-lg); }
+.room-card__ribbon {
+  position: absolute; top: 1rem; right: 1rem; z-index: 1;
+  background: var(--brass); color: var(--ink);
+  font-family: var(--font-mono); font-size: 0.7rem; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.04em;
+  padding: 0.35rem 0.75rem; border-radius: 999px;
+}
+.room-card__meta {
+  display: flex; gap: 1rem; margin-bottom: 0.7rem;
+  font-family: var(--font-mono); font-size: 0.76rem; color: var(--muted);
+}
+.room-card__body p { margin: 0 0 1rem; font-size: 0.92rem; color: var(--muted); }
+.room-card__features {
+  list-style: none; padding: 0; margin: 0;
+  display: flex; flex-wrap: wrap; gap: 0.5rem;
+}
+.room-card__features li {
+  font-size: 0.76rem; font-weight: 500; color: var(--brass-deep);
+  background: var(--brass-tint); padding: 0.3rem 0.7rem; border-radius: 999px;
+}
 
 @media (min-width: 700px) {
   .rooms-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (min-width: 980px) {
+  .rooms-grid { grid-template-columns: repeat(3, 1fr); }
 }
 
 /* ==========================================================================
@@ -397,26 +577,65 @@ body[data-theme^="campaign-"] .btn--brass::after {
 /* ==========================================================================
    Amenities
    ========================================================================== */
+.amenities {
+  position: relative;
+  background:
+    radial-gradient(ellipse 70% 60% at 15% 10%, rgba(201,154,61,0.07) 0%, transparent 55%),
+    radial-gradient(ellipse 60% 50% at 90% 90%, rgba(74,22,32,0.04) 0%, transparent 55%);
+}
 .amenity-grid {
-  display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.6rem;
+  display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.4rem;
 }
 .amenity {
-  padding: 1.8rem 1.5rem;
-  background: var(--card);
-  border: 1px solid var(--line);
+  padding: 2rem 1.7rem;
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-border);
   border-radius: var(--radius);
+  transition: box-shadow .4s var(--ease-premium), transform .4s var(--ease-premium), border-color .3s ease, background .3s ease;
+}
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .amenity { background: rgba(255,255,255,0.94); }
+}
+.amenity:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-4px);
+  border-color: var(--brass-tint);
+  background: var(--card);
 }
 .amenity svg {
   width: 22px; height: 22px; color: var(--brass-deep);
-  padding: 0.7rem; box-sizing: content-box;
+  padding: 0.75rem; box-sizing: content-box;
   background: var(--brass-tint); border-radius: 50%;
-  margin-bottom: 1.1rem;
+  margin-bottom: 1.3rem;
 }
-.amenity h3 { font-size: 1.04rem; font-weight: 600; margin-bottom: 0.4rem; }
-.amenity p { margin: 0; font-size: 0.88rem; color: var(--muted); }
+.amenity h3 { font-size: 1.08rem; font-weight: 600; margin-bottom: 0.5rem; letter-spacing: -0.005em; }
+.amenity p { margin: 0; font-size: 0.9rem; color: var(--muted); line-height: 1.6; }
 
 @media (min-width: 700px) {
-  .amenity-grid { grid-template-columns: repeat(4, 1fr); }
+  .amenity-grid { grid-template-columns: repeat(4, 1fr); gap: 1.6rem; }
+}
+
+/* ==========================================================================
+   Stats band
+   ========================================================================== */
+.stats { background: var(--ink); }
+.stats__inner {
+  max-width: var(--container); margin: 0 auto; padding: 2.6rem 1.5rem;
+  display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.8rem;
+  text-align: center;
+}
+.stats__num {
+  display: block; font-family: var(--font-mono); font-weight: 600;
+  font-size: 1.6rem; color: var(--brass);
+}
+.stats__label {
+  display: block; font-size: 0.8rem; color: rgba(247,243,234,0.75);
+  margin-top: 0.3rem;
+}
+@media (min-width: 640px) {
+  .stats__inner { grid-template-columns: repeat(4, 1fr); }
 }
 
 /* ==========================================================================
@@ -429,12 +648,17 @@ body[data-theme^="campaign-"] .btn--brass::after {
   position: relative; aspect-ratio: 4/3; border-radius: var(--radius);
   display: flex; align-items: flex-end; overflow: hidden;
   background: var(--ink);
+  transition: box-shadow .4s var(--ease-premium), transform .4s var(--ease-premium);
+  /* reset: these are <button> elements now, for keyboard/lightbox access */
+  border: none; padding: 0; margin: 0; width: 100%; font: inherit; cursor: pointer;
 }
+.gallery__item:focus-visible { outline: 3px solid var(--brass); outline-offset: 3px; }
+.gallery__item:hover { box-shadow: var(--shadow-lg); transform: translateY(-3px); }
 .gallery__item img {
   position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;
-  transition: transform .5s ease;
+  transition: transform .6s var(--ease-premium);
 }
-.gallery__item:hover img { transform: scale(1.06); }
+.gallery__item:hover img { transform: scale(1.07); }
 .gallery__item span {
   position: relative; z-index: 1;
   color: var(--ivory); font-family: var(--font-mono); font-size: 0.78rem;
@@ -458,7 +682,17 @@ body[data-theme^="campaign-"] .btn--brass::after {
 .location__list { list-style: none; padding: 0; margin: 1.5rem 0 1.9rem; display: flex; flex-direction: column; gap: 0.6rem; font-family: var(--font-mono); font-size: 0.86rem; }
 .location__list li { padding-left: 1.5rem; position: relative; }
 .location__list li::before { content: "→"; position: absolute; left: 0; color: var(--brass-deep); }
-.location__map { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
+.location__map {
+  background: var(--card); border: 1px solid var(--line); border-radius: var(--radius);
+  overflow: hidden; box-shadow: var(--shadow-md);
+  position: relative;
+}
+.location__map iframe {
+  filter: grayscale(25%) contrast(1.05) brightness(0.97);
+  transition: filter .4s var(--ease-premium);
+  display: block;
+}
+.location__map:hover iframe { filter: grayscale(0%) contrast(1) brightness(1); }
 
 @media (min-width: 880px) {
   .location { grid-template-columns: 1fr 1fr; align-items: center; }
@@ -479,12 +713,24 @@ body[data-theme^="campaign-"] .btn--brass::after {
   display: flex; align-items: center; gap: 0.9rem;
   padding: 1.2rem 1.4rem; background: var(--card);
   border: 1px solid var(--line); border-radius: var(--radius);
-  transition: border-color .15s ease, transform .15s ease;
+  transition: border-color .3s ease, transform .4s var(--ease-premium), box-shadow .4s var(--ease-premium);
 }
-.contact__card:hover { border-color: var(--brass); transform: translateY(-2px); }
+.contact__card:hover { border-color: var(--brass); transform: translateY(-3px); box-shadow: var(--shadow-md); }
 .contact__card svg { width: 22px; height: 22px; color: var(--brass-deep); flex-shrink: 0; }
 .contact__card span { display: block; font-size: 0.78rem; color: var(--muted); }
 .contact__card strong { display: block; font-family: var(--font-mono); font-size: 0.92rem; color: var(--ink); }
+.contact__card--call { align-items: flex-start; }
+.contact__card--call > div { display: flex; flex-direction: column; gap: 0.15rem; }
+.contact__card--call a { display: block; padding: 0.35rem 0; margin: -0.35rem 0; }
+.contact__card--call a:hover strong { color: var(--brass-deep); }
+
+.contact__card--primary {
+  background: var(--whatsapp); border-color: var(--whatsapp);
+}
+.contact__card--primary svg { color: var(--ivory); }
+.contact__card--primary span { color: rgba(247,243,234,0.75); }
+.contact__card--primary strong { color: var(--ivory); }
+.contact__card--primary:hover { border-color: var(--whatsapp-deep); background: var(--whatsapp-deep); box-shadow: var(--shadow-md); }
 
 @media (min-width: 700px) {
   .contact__cards { grid-template-columns: repeat(3, 1fr); }
@@ -541,7 +787,80 @@ body[data-theme^="campaign-"] .footer::before {
 }
 
 /* ==========================================================================
-   Scroll reveal
+   Scroll reveal (cinematic — GPU-only: opacity + transform)
    ========================================================================== */
-.reveal { opacity: 0; transform: translateY(18px); transition: opacity .7s ease, transform .7s ease; }
-.reveal.is-visible { opacity: 1; transform: translateY(0); }
+.reveal {
+  opacity: 0; transform: translateY(28px) scale(0.985);
+  transition: opacity 0.9s var(--ease-premium), transform 0.9s var(--ease-premium);
+}
+.reveal.is-visible { opacity: 1; transform: translateY(0) scale(1); }
+
+/* Staggered cascade within grids — same reveal, just offset timing.
+   nth-child delay only; no JS per-item logic needed. */
+.amenity-grid .reveal:nth-child(2) { transition-delay: 0.06s; }
+.amenity-grid .reveal:nth-child(3) { transition-delay: 0.12s; }
+.amenity-grid .reveal:nth-child(4) { transition-delay: 0.18s; }
+.rooms-grid .reveal:nth-child(2) { transition-delay: 0.08s; }
+.rooms-grid .reveal:nth-child(3) { transition-delay: 0.16s; }
+.gallery__grid .reveal:nth-child(2) { transition-delay: 0.05s; }
+.gallery__grid .reveal:nth-child(3) { transition-delay: 0.10s; }
+.gallery__grid .reveal:nth-child(4) { transition-delay: 0.15s; }
+.gallery__grid .reveal:nth-child(5) { transition-delay: 0.20s; }
+.gallery__grid .reveal:nth-child(6) { transition-delay: 0.25s; }
+.gallery__grid .reveal:nth-child(7) { transition-delay: 0.30s; }
+
+/* ==========================================================================
+   Lightbox (Phase 6 — gallery photo viewer)
+   GPU-only: opacity + transform for open/close and the image's own
+   subtle scale-in. No layout-affecting animation.
+   ========================================================================== */
+.lightbox {
+  position: fixed; inset: 0; z-index: 1000;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(15, 20, 17, 0.92);
+  backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+  opacity: 0; pointer-events: none;
+  transition: opacity .35s var(--ease-premium);
+}
+.lightbox:not([hidden]) { opacity: 1; pointer-events: auto; }
+.lightbox[hidden] { display: flex; } /* keep flex layout even while fading out via JS-timed hidden toggle */
+
+.lightbox__figure {
+  position: relative; max-width: min(90vw, 1100px); max-height: 82vh;
+  margin: 0; display: flex; flex-direction: column; align-items: center;
+  transform: scale(0.96); transition: transform .35s var(--ease-premium);
+}
+.lightbox:not([hidden]) .lightbox__figure { transform: scale(1); }
+.lightbox__figure img {
+  max-width: 100%; max-height: 78vh; width: auto; height: auto;
+  border-radius: 12px; box-shadow: var(--shadow-lg);
+}
+.lightbox__figure figcaption {
+  color: rgba(247,243,234,0.85); font-family: var(--font-mono); font-size: 0.8rem;
+  margin-top: 0.9rem;
+}
+
+.lightbox__close, .lightbox__nav {
+  position: absolute; z-index: 2;
+  display: flex; align-items: center; justify-content: center;
+  width: 44px; height: 44px; border-radius: 50%;
+  background: rgba(247,243,234,0.1); color: var(--ivory);
+  border: 1px solid rgba(247,243,234,0.25);
+  backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+  cursor: pointer;
+  transition: background .2s ease, transform .3s var(--ease-premium);
+}
+.lightbox__close:hover, .lightbox__nav:hover { background: rgba(247,243,234,0.2); transform: scale(1.06); }
+.lightbox__close:focus-visible, .lightbox__nav:focus-visible { outline: 2px solid var(--brass); outline-offset: 2px; }
+.lightbox__close { top: 1.5rem; right: 1.5rem; }
+.lightbox__nav--prev { left: 1rem; top: 50%; transform: translateY(-50%); }
+.lightbox__nav--next { right: 1rem; top: 50%; transform: translateY(-50%); }
+.lightbox__nav--prev:hover { transform: translateY(-50%) scale(1.06); }
+.lightbox__nav--next:hover { transform: translateY(-50%) scale(1.06); }
+
+@media (max-width: 640px) {
+  .lightbox__nav { width: 38px; height: 38px; }
+  .lightbox__close { top: 1rem; right: 1rem; width: 38px; height: 38px; }
+  .lightbox__nav--prev { left: 0.5rem; }
+  .lightbox__nav--next { right: 0.5rem; }
+}

@@ -27,7 +27,7 @@
  *   }
  *
  * -----------------------------------------------------------------------
- * CATEGORY PRIORITY (highest wins if two entries land on the same day)
+ * CATEGORY PRIORITY (highest wins if two entries' windows overlap)
  * -----------------------------------------------------------------------
  *   remembrance > national > celebration > seasonal
  *
@@ -35,19 +35,42 @@
  * (campaign > remembrance > national > festivals > seasonal > default) —
  * campaigns are handled one level up, in theme-engine.js.
  *
- * Known date collisions in 2026, resolved by this ordering:
- *   - Sep 14, 2026: Hindi Diwas (national) OUTRANKS Ganesh Chaturthi
- *     (celebration) per the stated category order. If you'd rather
- *     Ganesh Chaturthi take precedence that day, either raise its
- *     `priority` and move "celebration" above "national" in
- *     CATEGORY_ORDER below, or delete/adjust the Hindi Diwas entry for
- *     that year — this file is the only place that needs to change.
- *   - Oct 2, 2026: Gandhi Jayanti and Lal Bahadur Shastri Jayanti both
- *     fall on Oct 2 and are both tagged "remembrance" — Gandhi Jayanti
- *     wins on `priority` (90 vs 80).
- *   - Nov 26, 2026: Constitution Day (national) vs the 26/11 remembrance
- *     day (remembrance) — remembrance wins by category, regardless of
- *     priority numbers.
+ * -----------------------------------------------------------------------
+ * ACTIVE WINDOWS (not just the exact day)
+ * -----------------------------------------------------------------------
+ * Every entry activates for a WINDOW around its date, not just the exact
+ * day: `preDays` before it starts, `postDays` after it ends (both
+ * inclusive). Defaults are per-category (see CATEGORY_DEFAULT_WINDOW
+ * below) — festivals get ±5 days, national days ±3, remembrance days ±1,
+ * seasonal themes get no extra expansion (they're already wide ranges).
+ * Any entry can override its window by adding its own `preDays`/
+ * `postDays` — no engine change needed, ever; the engine only ever reads
+ * this file's data, never a hardcoded number.
+ *
+ * Because windows are wide (festivals especially), MANY entries now
+ * overlap across the year — far more than the handful of exact-day
+ * collisions in earlier versions of this file. Category order still
+ * resolves every overlap the same way it always has (remembrance >
+ * national > celebration > seasonal, then `priority`, then array order).
+ * Call `window.PGTheme.admin.PriorityManager.listFestivalCollisions(year)`
+ * (Phase 6) for the full, current, exact list for any year — it's now
+ * long enough (30+ overlapping stretches in 2026) that maintaining a
+ * hand-written table here would drift out of date immediately.
+ *
+ * Two entries are worth flagging by name because they're worth
+ * reconsidering, not just noting: with the 2026 dates and default
+ * windows as configured, **`dussehra` and `new-years-eve` never win a
+ * single day of 2026** — their entire windows are always overlapped by
+ * an earlier-in-array same-category neighbor (Navratri; New Year) or a
+ * higher-ranked category (Police Commemoration Day). This isn't a bug —
+ * the resolution rule is doing exactly what it's supposed to — but it
+ * likely isn't what you want for two named festivals. Fixes are entirely
+ * data changes in this file, e.g.: give `dussehra`/`new-years-eve` a
+ * higher `priority` than their neighbor, shrink their `preDays`/
+ * `postDays` so the overlap shrinks or disappears, or move them earlier
+ * in the array (ties break by array order). Call
+ * `admin.PriorityManager.listSilencedEntries(year)` to check for this
+ * after any calendar edit.
  *
  * -----------------------------------------------------------------------
  * TONE NOTE
@@ -78,7 +101,44 @@
 
   window.PGTheme.seasonalThemesEnabled = window.PGTheme.seasonalThemesEnabled || false;
 
-  var CATEGORY_ORDER = ["remembrance", "national", "celebration", "seasonal"];
+  var CATEGORY_ORDER = ["remembrance", "national", "celebration"];
+
+  /**
+   * -------------------------------------------------------------------
+   * ACTIVE WINDOWS (configuration-driven — nothing below is read by the
+   * engine as a hardcoded number; it only reads THIS object, or an
+   * entry's own `preDays`/`postDays` override).
+   * -------------------------------------------------------------------
+   * Every entry gets a window around its actual date, not just the exact
+   * day: `preDays` before, `postDays` after (both inclusive). Defaults
+   * are per-category here; any entry can override by adding its own
+   * `preDays`/`postDays` — no engine change needed for that, ever.
+   *
+   * Rationale for the defaults below: bigger, once-a-year festivals
+   * benefit from a longer lead-in/wind-down (decor, mood) than a solemn
+   * remembrance day, which should be brief and precise. Seasonal themes
+   * already ARE wide date ranges by design, so they get no additional
+   * expansion (0/0) — expanding a season further would be meaningless.
+   */
+  var CATEGORY_DEFAULT_WINDOW = {
+    celebration: { preDays: 5, postDays: 5 },
+    national: { preDays: 3, postDays: 3 },
+    remembrance: { preDays: 1, postDays: 1 },
+    seasonal: { preDays: 0, postDays: 0 },
+  };
+
+  /** @returns {number} */
+  function resolvePreDays(f) {
+    if (f.preDays != null) return f.preDays;
+    var def = CATEGORY_DEFAULT_WINDOW[f.category];
+    return def ? def.preDays : 0;
+  }
+  /** @returns {number} */
+  function resolvePostDays(f) {
+    if (f.postDays != null) return f.postDays;
+    var def = CATEGORY_DEFAULT_WINDOW[f.category];
+    return def ? def.postDays : 0;
+  }
 
   window.PGTheme.festivals = [
     // -----------------------------------------------------------------
@@ -150,49 +210,111 @@
     { id: "season-winter-2", name: "Winter", category: "seasonal", priority: 10, dateRanges: { 2026: { start: "01-01", end: "01-31" } }, themeId: "festival-season-winter" },
   ];
 
-  /** True if `date` falls within a single-day/range match for entry `f`. */
-  function entryMatchesDate(f, date, month, day, year) {
-    if (f.dateRanges && f.dateRanges[year]) {
-      var range = f.dateRanges[year];
-      var start = new Date(year + "-" + range.start + "T00:00:00");
-      var end = new Date(year + "-" + range.end + "T23:59:59");
-      return date >= start && date <= end;
+  /**
+   * Returns entry `f`'s "core" date/range (before window expansion) for
+   * the given `yearLabel`, or null if `f` has no data for that label
+   * (only possible for `dates`/`dateRanges` entries — fixed `month`/`day`
+   * entries always have a core for any label).
+   * @returns {{start: Date, end: Date}|null}
+   */
+  function getCoreWindow(f, yearLabel) {
+    if (f.dateRanges) {
+      if (!f.dateRanges[yearLabel]) return null;
+      var r = f.dateRanges[yearLabel];
+      return {
+        start: new Date(yearLabel + "-" + r.start + "T00:00:00"),
+        end: new Date(yearLabel + "-" + r.end + "T23:59:59"),
+      };
     }
-    if (f.dates && f.dates[year]) {
-      var parts = f.dates[year].split("-");
-      return Number(parts[0]) === month && Number(parts[1]) === day;
+    if (f.dates) {
+      if (!f.dates[yearLabel]) return null;
+      var d = new Date(yearLabel + "-" + f.dates[yearLabel] + "T00:00:00");
+      var dEnd = new Date(yearLabel + "-" + f.dates[yearLabel] + "T23:59:59");
+      return { start: d, end: dEnd };
     }
     if (f.month != null && f.day != null) {
-      return f.month === month && f.day === day;
+      return {
+        start: new Date(yearLabel, f.month - 1, f.day, 0, 0, 0),
+        end: new Date(yearLabel, f.month - 1, f.day, 23, 59, 59),
+      };
+    }
+    return null;
+  }
+
+  /** Expands a core {start,end} window by preDays/postDays (handles month/year rollover automatically via Date arithmetic). */
+  function expandWindow(core, preDays, postDays) {
+    var start = new Date(core.start.getTime());
+    start.setDate(start.getDate() - preDays);
+    start.setHours(0, 0, 0, 0);
+    var end = new Date(core.end.getTime());
+    end.setDate(end.getDate() + postDays);
+    end.setHours(23, 59, 59, 999);
+    return { start: start, end: end };
+  }
+
+  /**
+   * True if `date` falls within entry `f`'s active window (its core
+   * date/range, expanded by preDays/postDays — see CATEGORY_DEFAULT_WINDOW
+   * and resolvePreDays/resolvePostDays above). Checks the core for
+   * `date`'s year AND the adjacent years, so a window that spans a
+   * year boundary (e.g. New Year's 5-day pre-window starting in late
+   * December of the PREVIOUS year) is still caught correctly.
+   */
+  function entryActiveOn(f, date) {
+    var year = date.getFullYear();
+    var preDays = resolvePreDays(f);
+    var postDays = resolvePostDays(f);
+
+    for (var offset = -1; offset <= 1; offset++) {
+      var core = getCoreWindow(f, year + offset);
+      if (!core) continue;
+      var expanded = expandWindow(core, preDays, postDays);
+      if (date >= expanded.start && date <= expanded.end) return true;
     }
     return false;
   }
 
   /**
-   * Returns the single highest-priority calendar entry active on `date`,
-   * or null. Resolution: gather every entry whose date matches, group by
-   * category, take the highest-ranked category present (per
-   * CATEGORY_ORDER — "seasonal" only considered if
-   * `window.PGTheme.seasonalThemesEnabled` is true), then within that
-   * category pick the highest `priority` (ties broken by array order).
+   * Returns EVERY calendar entry whose active window covers `date`
+   * (before category/priority resolution) — used both by
+   * getActiveFestival() below and by the Phase 6 admin API's collision
+   * detector, so the two never disagree about what "matches".
+   * @param {Date} [date] defaults to now
+   * @returns {Array<Object>}
+   */
+  window.PGTheme.getMatchingFestivals = function (date) {
+    date = date || new Date();
+    var list = window.PGTheme.festivals || [];
+    var matches = [];
+    for (var i = 0; i < list.length; i++) {
+      var f = list[i];
+      if (f.category === "seasonal" && !window.PGTheme.seasonalThemesEnabled) continue;
+      if (entryActiveOn(f, date)) matches.push(f);
+    }
+    return matches;
+  };
+
+  /**
+   * Returns the single highest-priority calendar entry active on `date`
+   * within remembrance/national/celebration, or null. Deliberately
+   * excludes "seasonal" — see getActiveSeason() below. This split exists
+   * so a future tier (Monthly Themes) can sit between "festival" and
+   * "season" in the overall engine priority without this file needing
+   * to know anything about that tier — theme-engine.js just calls
+   * getActiveFestival(), then its own monthly-theme check, then
+   * getActiveSeason(), in that order.
+   * Resolution: gather every entry whose ACTIVE WINDOW covers `date`
+   * (via getMatchingFestivals), group by category, take the
+   * highest-ranked category present, then within that category pick the
+   * highest `priority` (ties broken by array order).
    * @param {Date} [date] defaults to now
    * @returns {Object|null}
    */
   window.PGTheme.getActiveFestival = function (date) {
     date = date || new Date();
-    var month = date.getMonth() + 1;
-    var day = date.getDate();
-    var year = date.getFullYear();
-
-    var list = window.PGTheme.festivals || [];
-    var matches = [];
-
-    for (var i = 0; i < list.length; i++) {
-      var f = list[i];
-      if (f.category === "seasonal" && !window.PGTheme.seasonalThemesEnabled) continue;
-      if (entryMatchesDate(f, date, month, day, year)) matches.push(f);
-    }
-
+    var matches = window.PGTheme.getMatchingFestivals(date).filter(function (m) {
+      return m.category !== "seasonal";
+    });
     if (matches.length === 0) return null;
 
     for (var c = 0; c < CATEGORY_ORDER.length; c++) {
@@ -207,5 +329,26 @@
       }
     }
     return null;
+  };
+
+  /**
+   * Returns the active seasonal entry, or null — null immediately if
+   * `window.PGTheme.seasonalThemesEnabled` is false. Split out from
+   * getActiveFestival() so Monthly Themes can rank above seasonal in the
+   * overall priority chain (campaign > festival > monthly > season >
+   * default) without this file needing any monthly-theme awareness.
+   * Reuses getMatchingFestivals() — no re-implemented date matching.
+   * @param {Date} [date] defaults to now
+   * @returns {Object|null}
+   */
+  window.PGTheme.getActiveSeason = function (date) {
+    date = date || new Date();
+    if (!window.PGTheme.seasonalThemesEnabled) return null;
+    var matches = window.PGTheme.getMatchingFestivals(date).filter(function (m) {
+      return m.category === "seasonal";
+    });
+    if (matches.length === 0) return null;
+    matches.sort(function (a, b) { return (b.priority || 0) - (a.priority || 0); });
+    return matches[0];
   };
 })();

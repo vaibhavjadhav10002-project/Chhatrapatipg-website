@@ -329,3 +329,318 @@
 - Full regression test (a live festival + the entire Phase 6 admin API)
   re-run after these changes — nothing broken. See `THEME-ENGINE.md` for
   the complete audit and verification list.
+
+## Phase 13 — Configurable Active Windows (2026-08-01)
+
+- **Rewrote the calendar matching logic in `festival-calendar.js`**:
+  every entry now activates for a window around its date, not just the
+  exact day. Defaults, config-driven (not hardcoded in the engine):
+  festivals ±5 days, national days ±3, remembrance days ±1, seasonal
+  unchanged (0/0 — already wide ranges). Any entry can override with its
+  own `preDays`/`postDays`.
+- Added `getMatchingFestivals(date)` (returns every entry whose window
+  covers a date, before priority resolution) — `getActiveFestival()` is
+  now built on top of it, and the Phase 6 admin API's collision detector
+  calls the same function, so the two can never disagree.
+- Year-boundary crossing (a window spanning Dec→Jan) handled via real
+  `Date` arithmetic checking the adjacent year on both sides — verified
+  both directions.
+- **`theme-engine.js` was not modified at all** — the priority chain
+  (campaign → remembrance → national → celebration → seasonal → default)
+  is unaffected; only what counts as "a match" changed, in
+  `festival-calendar.js` alone.
+- Rewrote `admin.PriorityManager.listFestivalCollisions()` to scan every
+  day of a year (reusing `getMatchingFestivals()`/`getActiveFestival()` —
+  no re-implemented matching logic) and group consecutive overlapping
+  days into ranges, instead of only checking exact-date matches. Added
+  `admin.PriorityManager.listSilencedEntries(year)` — finds any entry
+  that never wins a single day.
+- **Found and documented, not silently fixed**: with the new windows,
+  2026 has 34 distinct overlapping date ranges (up from 4 known exact-day
+  collisions), and two named festivals — `dussehra` and `new-years-eve`
+  — never win a single day of 2026 at all, fully overlapped by a
+  same-category neighbor or a higher-ranked category. An earlier attempt
+  fixed this by bumping Dussehra's priority; that was reverted since
+  retuning priorities wasn't part of this request and is an editorial
+  call, not a code fix. See `THEME-ENGINE.md` Phase 8 for the full
+  writeup and how to adjust it if desired.
+- **Verified**: window boundaries exact (5th day in, 6th day out, for
+  all three category defaults); year-boundary crossing both directions;
+  priority/category resolution unchanged; full regression (quiet day,
+  active campaign priority, all 8 admin modules) re-run clean.
+
+## Phase 14 — Business info correction (2026-08-01)
+
+- Added a second phone number throughout (+91 94053 34300, alongside the
+  existing +91 88570 09635) — top bar, hero "Call now", and a redesigned
+  Contact "Call" card showing both as separate tappable numbers.
+- Added "PG Like's Home" tagline to the hero eyebrow line.
+- **Added Single sharing as a third room type** (₹11,000/mo) — new room
+  card using `images/cozy-room.jpg`, alongside corrected Double
+  (₹6,000) and Triple (₹5,000) sharing rates. Rooms grid now shows 3
+  columns on wide screens.
+- Added a clear disclosure that **electricity (light) and gas bills are
+  excluded** from rent and billed separately — in the rooms section
+  intro and the rate-card note. This was specifically flagged as
+  important by the owner.
+- Corrected the address using a newly-provided, more precise Google Maps
+  link: **Sharnam Sunshine, 401, Fatehgunj, Vadodara, Gujarat 390002**
+  (previously 390008) — updated in the location text, list, map embed,
+  and the "Open in Google Maps" link.
+- Expanded Amenities from 8 to 10 curated cards to cover the owner's full
+  facilities list (geysers in every washroom, RO-filtered water, fully
+  loaded kitchen with LPG, washing machine connection, fridge access,
+  personal locker, bed sheets/pillow covers) without turning the section
+  into a 21-item checklist — grouped into sensible categories, keeping
+  the premium curated feel.
+- Added a "Single sharing" option to the enquiry form's sharing dropdown.
+- Updated meta description for the new room mix and rate range.
+
+## Phase 15 — Premium UI/UX Polish, Phase 1: Design Foundation (2026-08-01)
+
+- Added premium design tokens to `css/style.css` `:root`: layered
+  `--shadow-sm/md/lg/glow`, `--glass-bg/border/blur` + `.glass`/
+  `.glass-dark` utilities (with a `@supports` fallback), a
+  `--ease-premium` cubic-bezier motion curve, and a `--space-xs..xl`
+  spacing scale. No branding tokens (ink/brass/ivory/fonts) touched.
+- Bumped hero title and section heading type scale for more presence;
+  bumped section vertical padding to `--space-xl` (7rem).
+- Buttons, room cards, gallery items, amenity cards, and contact cards
+  now share one consistent shadow + easing language
+  (`--shadow-md`/`--shadow-lg` + `--ease-premium`) instead of several
+  slightly different ad-hoc values.
+- Nav's existing blur now uses the same `--glass-blur` token as
+  everything else instead of a hardcoded value.
+- Refined scroll-reveal: more travel distance, a subtle scale-in, the
+  premium ease curve, and staggered `transition-delay` within grids —
+  still pure `opacity`/`transform`/`box-shadow`, still the same
+  `IntersectionObserver`. Room cards and the rate-card now reveal
+  individually (cascading) instead of the whole Rooms section fading in
+  as one block.
+- **Verified**: zero changes to any `.js` theme/campaign/festival engine
+  file — full regression re-run clean (quiet day → `default`, all 8
+  admin modules intact). See `THEME-ENGINE.md` for full detail.
+
+## Phase 16 — Premium UI/UX Polish, Phase 2: Hero Section (2026-08-01)
+
+- Added a floating availability badge (glass-dark pill, pulsing status
+  dot) — honest copy ("Single, Double & Triple sharing available",
+  the room types, not a live-vacancy claim we can't actually verify).
+  Repositions to the bottom of the hero on small screens.
+- Added a scroll indicator (bouncing chevron, links to `#rooms`) at the
+  bottom of the hero — real navigational value, not just decoration.
+- Enhanced the scrim with a subtle radial ambient-light layer (soft
+  brass-toned glow, upper-right) blended with the existing dark
+  gradient — "elegant dark overlay" + "subtle background lighting" in
+  one gradient definition, no extra DOM.
+- Hero content now has a one-time cinematic entrance animation on load
+  (fade + rise, `--ease-premium`, 1s) — separate from the scroll-reveal
+  system, since the hero is visible immediately rather than scrolled to.
+- Secondary hero CTA ("Call now") now has a frosted-glass base state
+  (subtle translucent fill + blur) instead of a plain outline.
+- **Verified**: all new animations use only `opacity`/`transform` (plus
+  one `box-shadow` on button hover, scoped to the button only); all
+  covered by the existing `prefers-reduced-motion` override — the
+  fill-mode entrance animation degrades to "already visible" instantly
+  rather than breaking. HTML tag balance re-checked (65 divs, 6
+  sections, all matched). Full engine regression re-run clean — this
+  phase touched only `index.html` and `css/style.css`, no `.js` engine
+  file.
+
+## Phase 17 — Premium UI/UX Polish, Phase 3: Room Showcase (2026-08-01)
+
+- Room cards rebuilt as a premium accommodation gallery: larger photo
+  area (5:4, was 4:3), a floating "Available" status badge and price
+  tag directly on the photo (was a text row below it) — closer to how
+  premium booking sites present room cards.
+- Added an occupancy/bed-count meta row (e.g. "2 occupants · 2 beds")
+  and a row of feature chips (AC, WiFi, Personal locker, Geyser) per
+  card. **Deliberately did not add square-footage numbers** — there's no
+  real room-size data to show, and fabricating one would be dishonest;
+  noted in `README.md` as something to add if the owner provides real
+  measurements.
+- The "Available" badge is plain static text, not tied to any real
+  inventory system — flagged in `README.md` for the owner to edit/remove
+  per room type if it stops being accurate.
+- **Verified**: HTML tag balance (articles, lists, divs) re-checked;
+  full engine regression re-run clean — this phase touched only
+  `index.html` and `css/style.css`.
+
+## Phase 18 — Premium UI/UX Polish, Phase 4: Amenities (2026-08-01)
+
+- Amenity cards converted to glass (`--glass-bg` + `backdrop-filter`
+  blur, `@supports` fallback for older browsers) — solidify to a plain
+  white card on hover for readability/emphasis.
+- Added a very subtle ambient backdrop to the Amenities section itself
+  (two faint radial gradients, opacity 0.04–0.07) so the glass cards
+  have something gentle to blur against, rather than floating over flat
+  color — kept deliberately understated, not a visible pattern.
+- Refined spacing (larger icon-circle padding, more line-height on
+  descriptions) and hierarchy (slightly larger heading weight/tracking).
+- **Verified**: CSS brace-balanced; full engine regression clean — no
+  `.js` engine file touched this phase.
+
+## Phase 19 — Premium UI/UX Polish, Phase 5 skipped, Phase 6: Gallery + Lightbox (2026-08-01)
+
+- Student Reviews section (originally planned Phase 5) skipped at the
+  owner's request rather than filled with fabricated testimonials —
+  no fake names/quotes were added anywhere.
+- Gallery items converted from `<div>`s to real `<button>` elements
+  (keyboard-focusable, native click semantics) and wired to a new
+  lightbox: click any photo to view it full-size with prev/next
+  navigation, a close button, Escape/arrow-key support, and
+  click-outside-to-close. Focus returns to the exact thumbnail that was
+  clicked when the lightbox closes.
+- Lightbox open/close and image transitions use only `opacity` and
+  `transform` (figure scales in from 0.96→1) — no layout-affecting
+  animation. Background scroll is locked while open.
+- **Verified**: HTML tag balance (12 buttons, 1 figure, divs) re-checked;
+  full engine regression re-run clean — this phase touched
+  `index.html`, `css/style.css`, and `js/script.js` only (no theme/
+  campaign/festival engine file).
+
+## Phase 20 — Premium UI/UX Polish, Phase 7: Pricing (2026-08-01)
+
+- Rather than duplicate the Rooms & Rates content in a second "Pricing"
+  section, enhanced the existing room cards: Triple sharing (already
+  labeled "our most booked option" in the copy) now carries a
+  `room-card--recommended` treatment — a brass border, deeper shadow,
+  and a small "Most booked" ribbon on the photo. No new section, no
+  duplicated pricing data.
+- **Verified**: HTML tag balance re-checked (3 articles); full engine
+  regression clean — `index.html`/`css/style.css` only, no engine file.
+
+## Phase 21 — Premium UI/UX Polish, Phase 8: Contact & Map (2026-08-01)
+
+- Map now has a premium frame (shadow) and a subtle desaturated filter
+  by default (grayscale 25%, slightly muted) that returns to full color
+  on hover — less "cartoonish default Google Maps," more elegant, while
+  staying fully interactive underneath.
+- WhatsApp — the primary enquiry channel — now visually leads the
+  contact cards (dark ink card, brass icon/text, glow-shadow on hover)
+  instead of matching weight with Call/Email, for clearer CTA hierarchy.
+- **Note on the "transform/opacity only" rule**: this phase's map-filter
+  and card-shadow transitions are paint-only (no layout reflow) but not
+  fully compositor-accelerated like `transform`/`opacity` — same
+  reasoning as the box-shadow hover transitions from earlier phases:
+  scoped to single small elements, low cost, and there's no
+  transform/opacity equivalent for "desaturate on hover" or "shadow
+  depth on hover." Flagging this explicitly rather than silently
+  stretching the rule's letter.
+- **Verified**: CSS brace-balanced; full engine regression clean —
+  `index.html`/`css/style.css` only.
+
+## Phase 22 — Monthly Premium Themes (2026-08-01)
+
+- New `js/monthly-themes.js`: 12 refined, muted accent themes (one per
+  month), on by default (`window.PGTheme.monthlyThemesEnabled = true`,
+  the one auto-on tier — campaigns and seasonal themes both stay
+  opt-in/off). Added matching `monthly-january` … `monthly-december`
+  entries to `theme-config.js` (accent-only, `heroDecoration: null` on
+  all 12 — see the design note in `monthly-themes.js` for why).
+- Priority chain now: campaign > remembrance > national > festival >
+  **monthly** > season > default.
+- Split `festival-calendar.js`'s single `getActiveFestival()` into
+  `getActiveFestival()` (remembrance/national/celebration only) and a
+  new `getActiveSeason()` (seasonal only) — both reuse the same
+  `getMatchingFestivals()`, no re-implemented date logic — so Monthly
+  Themes could slot in between them without `theme-engine.js` needing
+  any date-matching logic of its own. `theme-engine.js`'s
+  `getActiveTheme()` now checks campaign → festival → monthly → season →
+  default, in order.
+- **Documented, not silently patched**: with Monthly Themes on by
+  default, Season themes are now unreachable in practice — Monthly
+  always wins that priority tier first, on every day of the year, since
+  it's unconditional whenever nothing higher-priority is active. This is
+  the direct, correct consequence of the specified priority order, not a
+  bug — verified and written up in `THEME-ENGINE.md`.
+- **Verified**: quiet-day monthly fallback confirmed; festivals/national
+  days/remembrance days confirmed to still outrank monthly on their own
+  active days (Diwali, Republic Day, Martyrs' Day); campaign priority
+  confirmed unaffected; Season's new reachability condition verified
+  both ways; 57 total themes now registered (was 45); all 8 admin API
+  modules re-verified against the restructured festival-calendar.js.
+
+## Phase 23 — Visual direction change: maroon & gold (2026-08-01)
+
+- Re-themed the site's core identity from ink-green/brass to deep
+  maroon/gold, per a reference design the owner shared. Since the whole
+  site already reads color from CSS custom properties (`--ink`,
+  `--brass`, `--brass-deep`, `--brass-tint`), this was a token-value
+  change in `css/style.css` `:root` — no component, layout, or markup
+  changes needed anywhere else. `theme-config.js`'s `default` theme was
+  updated to match (kept in sync per the "single source of truth" rule
+  from Phase 1).
+- Added a dedicated `--whatsapp`/`--whatsapp-deep` green token (reusing
+  the existing brand-adjacent green already used for the "Available"
+  badge dot) and a `.btn--whatsapp` button variant — the WhatsApp CTA
+  (enquiry form submit) and the WhatsApp contact card now use this
+  dedicated green instead of the general gold accent, matching how the
+  reference distinguishes WhatsApp actions from the primary brand color.
+- Added a stats band (500+ Happy Students, 24×7 Security & Support, 3
+  Sharing Options, 100% Hygienic Food) between Amenities and Gallery.
+  **Numbers are illustrative, explicitly authorized by the owner** — "3
+  Sharing Options" is a real fact (Single/Double/Triple); the others are
+  general trust-marketing figures, not verified claims.
+- **Deliberately not done**: the reference's testimonial cards (with
+  placeholder names/photos/quotes) and its specific "X minutes to
+  [named real institution]" location list were not copied — the former
+  is exactly the fabricated-reviews problem already declined earlier in
+  this project; the latter would be a specific, checkable factual claim
+  about real named places (MS University, Parul University, etc.) that
+  nobody has verified — different risk profile than a generic stats
+  band the owner explicitly authorized. Existing general "walkable to
+  market/ATM/banks/hospital" copy (Location section) was left as-is.
+- **Pending from the owner**: a real logo file (currently still the
+  text monogram — swap point noted in README) and a real building
+  exterior photo (hero still uses a real interior photo — the reference
+  image itself can't be extracted as a usable asset, it's a screenshot
+  inside a design-mockup tool).
+- **Verified**: all hardcoded rgba() values matching the old ink/brass
+  colors were found and updated (not just the CSS custom properties) —
+  confirmed via grep, zero old-color rgba values remain. Full engine
+  regression re-run: `default` theme's `ink`/`brass` now read the new
+  values; festival/monthly themes confirmed to still correctly layer on
+  top (Diwali still resolves to `festival-diwali`, still overrides a
+  monthly theme, etc.) — this phase touched CSS/HTML plus one config
+  object in `theme-config.js`, no engine logic file.
+
+## Phase 24 — Final Mobile-First Polish + Honest Pricing Badges (2026-08-01)
+
+- **Corrected a factual conflict in the brief**: it asked for "Food
+  Included / Electricity Included / Gas Included" badges, which
+  contradicts real facts already on the site (food is a ₹3,000/mo
+  add-on; electricity and gas are billed separately). Did not implement
+  the false version. Instead added honest transparency badges —
+  "Transparent pricing", "No hidden charges", "Food available,
+  +₹3,000/mo", "Electricity & gas billed separately" — to the hero and
+  the Rooms & Rates section header.
+- **Mobile touch-target audit** (44px minimum): found and fixed two real
+  issues — the nav hamburger button was 38×34px (now 44×44px), and the
+  stacked phone-number links in the Call contact card had text-only tap
+  areas (now padded for a comfortable tap zone, no visual layout shift).
+- Added `overflow-x: hidden` on `<body>` as a defensive safety net
+  against horizontal scroll on narrow screens (360–430px) — audited for
+  fixed-width/nowrap overflow risks first; found none, added as a guard
+  anyway per the brief's explicit "no horizontal overflow" requirement.
+- Added touch-swipe (left/right) support to the gallery lightbox —
+  previously keyboard/click/button only, no touch gesture on the
+  primary device type for most visitors. Ignores swipes that are
+  more vertical than horizontal, so it doesn't fight a page scroll.
+- Added a pressed/active state to all buttons (`transform: translateY
+  scale`, GPU-only).
+- **Fixed the last 3 non-transform/opacity animations flagged in Phase
+  7's audit**, rather than re-documenting them as exceptions:
+  - The hero badge's pulsing dot used `box-shadow` — converted to a
+    `::after` ripple ring animating `transform: scale` + `opacity`.
+  - The particle and stadium hero decorations used `background-position`
+    — converted to an oversized background element (140% size) animated
+    with `transform: translate`/`translateY` instead, looping seamlessly
+    at exactly one tile period. `.hero`'s existing `overflow: hidden`
+    safely clips the oversized element.
+  - **All 10 keyframe animations sitewide now verified (programmatically)
+    to use only `transform`/`opacity`** — zero exceptions remaining.
+- **Verified**: CSS brace-balanced; HTML tag balance re-checked; full
+  engine regression clean (default theme colors, all 8 admin modules);
+  animation-property audit re-run clean across every `@keyframes` block
+  in the file.

@@ -305,52 +305,79 @@
     },
 
     /**
-     * Finds every pair of festival-calendar entries that land on the same
-     * calendar day in `year`, across any category, and reports which one
-     * currently wins per the engine's category-then-priority rule (see
-     * festival-calendar.js). Read-only — matches the known 2026 collisions
-     * documented in THEME-ENGINE.md. Respects
-     * `window.PGTheme.seasonalThemesEnabled` the same way the engine does
-     * — seasonal entries are excluded from collision detection while
-     * seasonal themes are off, since they can't actually collide with
-     * anything if they never activate.
+     * Finds every stretch of consecutive days in `year` where 2+
+     * calendar entries' ACTIVE WINDOWS overlap (not just the same exact
+     * date — festivals/national/remembrance days all now have pre/post
+     * windows, see festival-calendar.js), and reports which entry wins
+     * each stretch. Reuses the engine's own `getMatchingFestivals()` /
+     * `getActiveFestival()` day-by-day — this file never re-implements
+     * the category/priority resolution rule, so it can never disagree
+     * with what the site actually shows.
      * @param {number} year
-     * @returns {Array<{date: string, entries: Array<{id:string,name:string,category:string,priority:number}>, winnerId: string}>}
+     * @returns {Array<{startDate: string, endDate: string, entryIds: string[], winnerId: string}>}
      */
     listFestivalCollisions: function (year) {
-      var byDate = {};
+      var ranges = [];
+      var current = null;
+      var day = new Date(year, 0, 1);
+
+      while (day.getFullYear() === year) {
+        var matches = window.PGTheme.getMatchingFestivals(day);
+        if (matches.length > 1) {
+          var ids = matches.map(function (m) { return m.id; }).sort();
+          var key = ids.join(",");
+          var winner = window.PGTheme.getActiveFestival(day);
+          var dateStr = day.toISOString().slice(0, 10);
+
+          if (current && current.key === key && current.winnerId === (winner ? winner.id : null)) {
+            current.endDate = dateStr;
+          } else {
+            if (current) ranges.push(current);
+            current = { key: key, entryIds: ids, winnerId: winner ? winner.id : null, startDate: dateStr, endDate: dateStr };
+          }
+        } else if (current) {
+          ranges.push(current);
+          current = null;
+        }
+        day.setDate(day.getDate() + 1);
+      }
+      if (current) ranges.push(current);
+
+      return ranges.map(function (r) {
+        return { startDate: r.startDate, endDate: r.endDate, entryIds: r.entryIds, winnerId: r.winnerId };
+      });
+    },
+
+    /**
+     * Finds every calendar entry that NEVER actually wins a single day
+     * in `year` — fully overlapped-and-outranked all year by some
+     * combination of a wider/earlier-priority neighbor (same category)
+     * or a higher-ranked category. This can happen innocently once
+     * festivals have multi-day windows: e.g. a festival sandwiched
+     * between two others with earlier array position, or a short
+     * festival whose entire window falls inside a remembrance day's
+     * window. Not necessarily wrong — sometimes the calendar really is
+     * that packed — but worth knowing about. Excludes seasonal entries
+     * while `seasonalThemesEnabled` is false (they're EXPECTED to never
+     * win in that case, not a real collision problem).
+     * @param {number} year
+     * @returns {string[]} entry ids that never won a single day
+     */
+    listSilencedEntries: function (year) {
+      var winCounts = {};
       (window.PGTheme.festivals || []).forEach(function (f) {
         if (f.category === "seasonal" && !window.PGTheme.seasonalThemesEnabled) return;
-        var mmdd = null;
-        if (f.dates && f.dates[year]) mmdd = f.dates[year];
-        else if (f.dateRanges && f.dateRanges[year]) mmdd = f.dateRanges[year].start;
-        else if (f.month != null && f.day != null) {
-          mmdd = String(f.month).padStart(2, "0") + "-" + String(f.day).padStart(2, "0");
-        }
-        if (!mmdd) return;
-        byDate[mmdd] = byDate[mmdd] || [];
-        byDate[mmdd].push(f);
+        winCounts[f.id] = 0;
       });
 
-      var CATEGORY_RANK = { remembrance: 0, national: 1, celebration: 2, seasonal: 3 };
-      var collisions = [];
-      Object.keys(byDate).forEach(function (mmdd) {
-        var entries = byDate[mmdd];
-        if (entries.length < 2) return;
-        var sorted = entries.slice().sort(function (a, b) {
-          var rankDiff = CATEGORY_RANK[a.category] - CATEGORY_RANK[b.category];
-          if (rankDiff !== 0) return rankDiff;
-          return (b.priority || 0) - (a.priority || 0);
-        });
-        collisions.push({
-          date: year + "-" + mmdd,
-          entries: entries.map(function (e) {
-            return { id: e.id, name: e.name, category: e.category, priority: e.priority || 0 };
-          }),
-          winnerId: sorted[0].id,
-        });
-      });
-      return collisions;
+      var day = new Date(year, 0, 1);
+      while (day.getFullYear() === year) {
+        var active = window.PGTheme.getActiveFestival(day);
+        if (active && winCounts.hasOwnProperty(active.id)) winCounts[active.id]++;
+        day.setDate(day.getDate() + 1);
+      }
+
+      return Object.keys(winCounts).filter(function (id) { return winCounts[id] === 0; });
     },
   };
 
